@@ -9,6 +9,7 @@ data Program = Program [Stmt] deriving (Show, Eq)
 data Stmt
   = FuncDecl Identifier [Identifier] [Stmt]
   | Assign Assign
+  | Declare Identifier
   | Perform EComma deriving (Show, Eq)
 
 data Assign
