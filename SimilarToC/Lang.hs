@@ -12,14 +12,16 @@ data Stmt
   | Perform Expr deriving (Show, Eq)
 
 data Assign
-  = SimpleEquals Identifier Expr
-  | PlusEquals Identifier Expr
-  | MinusEquals Identifier Expr
-  | TimesEquals Identifier Expr
-  | DivideEquals Identifier Expr
-  | ModEquals Identifier Expr deriving (Show, Eq)
+  = SimpleEquals EPrefix EAssign
+  | PlusEquals EPrefix EAssign
+  | MinusEquals EPrefix EAssign
+  | TimesEquals EPrefix EAssign
+  | DivideEquals EPrefix EAssign
+  | ModEquals EPrefix EAssign deriving (Show, Eq)
 
-data Expr = E0 ECond | EComma Expr ECond deriving (Show, Eq)
+
+data Expr = E0 EAssign | EComma Expr EAssign deriving (Show, Eq)
+data EAssign = E ECond | EAssign Assign deriving (Show, Eq)
 data ECond = E1 EOr | ECond EOr ECond ECond deriving (Show, Eq)
 data EOr = E2 EAnd | EOr EOr EAnd deriving (Show, Eq)
 data EAnd = E3 EEquals | EAnd EAnd EEquals deriving (Show, Eq)
