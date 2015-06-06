@@ -30,9 +30,13 @@ instance Eq CValue where
 
 data LValue
   = Name String
+  | MAssign LValue String
+  | IAssign LValue Expr
 
 toLValue :: Expr -> LValue
 toLValue (Single (Ident a)) = Name a
+toLValue (Member a b) = MAssign (toLValue a) b
+toLValue (Index a b) = IAssign (toLValue a) b
 
 newtype Environment = Env ([(String, CValue)], Effect)
 
@@ -53,8 +57,32 @@ makeVoid = undefined
 
 
 
+retrieve :: LValue -> Expression CValue
+retrieve (Name name) = resolve name
+retrieve (MAssign thing mem) = do
+    x <- retrieve thing
+    memberAccess x mem
+retrieve (IAssign thing i) = do
+    blah <- retrieve thing
+    index <- evaluate i
+    arrayIndex blah index
+    
+
+
+
 assign :: LValue -> CValue -> Expression CValue
 assign (Name name) val = Expr (\(Env (e, v)) -> Right (val, Env ((name, val):e, v)))
+assign (MAssign thing field) val = do
+    a <- retrieve thing
+    case a of
+      Compound blah -> assign thing (Compound $ (field, val):blah)
+      _ -> crash $ NoMember field
+assign (IAssign thing i) val = do
+    a <- retrieve thing
+    ind <- evaluate i
+    case (ind, a) of
+      (Whole index, Array stuff) -> assign thing (Array $ take index stuff ++ [val] ++ drop (succ index) stuff)
+      _ -> crash TypeError
 
 resolve :: String -> Expression CValue
 resolve name = Expr (\(Env (e, v)) -> case lookup name e of
@@ -336,6 +364,11 @@ evaluate (Infix "%=" a b) = do
 evaluate (Infix "," a b) = do
   evaluate a
   evaluate b
+evaluate (ArrayLit stuff) = do
+  stuff' <- mapM evaluate stuff
+  return $ Array stuff'
+evaluate EmptyCompound = do
+  return (Compound [])
 
 
 

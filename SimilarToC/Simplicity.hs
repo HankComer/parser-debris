@@ -13,7 +13,9 @@ data Expr
   | Call Expr
   | CallArgs Expr [Expr]
   | Infix String Expr Expr
-  | Trinary Expr Expr Expr deriving (Show, Eq)
+  | Trinary Expr Expr Expr
+  | ArrayLit [Expr]
+  | EmptyCompound deriving (Show, Eq)
 
 data Atom = Int Int | Doub Double | Str String | Ident Identifier deriving (Show, Eq)
 
@@ -26,6 +28,8 @@ instance Translate ELeaf where
   translate (Num (D a)) = Single (Doub a)
   translate (String a) = Single (Str a)
   translate (Parens a) = translate a
+  translate (ArrLit a) = ArrayLit (arglist a)
+  translate EmptyStruct = EmptyCompound
 
 instance Translate ESuffix where
   translate (E9 a) = translate a

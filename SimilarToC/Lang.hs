@@ -33,7 +33,7 @@ data EProd = E7 EPrefix | ETimes EProd EPrefix | EDivide EProd EPrefix | EMod EP
 data EPrefix = E8 ESuffix | EPpp EPrefix | EPmm EPrefix | EPneg EPrefix | EPnot EPrefix deriving (Show, Eq)
 data ESuffix = E9 ELeaf | ESpp ESuffix | ESmm ESuffix | ESFuncArgs ESuffix EComma
   | ESMember ESuffix Identifier | EFuncCall ESuffix | EIndex ESuffix EComma deriving (Show, Eq)
-data ELeaf = Id Identifier | Num Number | String String | Parens EComma deriving (Show, Eq)
+data ELeaf = Id Identifier | Num Number | String String | Parens EComma | ArrLit EComma | EmptyStruct deriving (Show, Eq)
 
 type Identifier = String
 
