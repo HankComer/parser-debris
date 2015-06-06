@@ -38,3 +38,4 @@ data ELeaf = Id Identifier | Num Number | String String | Parens EComma deriving
 type Identifier = String
 
 data Number = I Int | D Double deriving (Show, Eq)
+
