@@ -10,7 +10,18 @@ item :: Parser Char
 item = Parser (\s -> case s of
     "" -> []
     (c:cs) -> [(c, cs)])
+getToken :: Parser String
+getToken = Parser lex
 
+getValue :: Read a => Parser a
+getValue = Parser reads
+
+spaced :: Parser a -> Parser a
+spaced thing = Parser $ (\s -> let
+  blah = parse (fmap (parse thing) getToken) s
+  foo = (fmap (\(a, b) -> (fmap fst a, b))) $ fmap (\(a, b) -> (filter ((== "") . snd) a, b)) blah
+  bar = concat $ fmap (\(as, b) -> zip as (repeat b)) foo
+ in bar)
 
 
 
