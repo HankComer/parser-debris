@@ -2,7 +2,7 @@ module EvalExpr where
 import Simplicity
 import Control.Applicative
 import Control.Monad (ap)
-
+import System.IO.Unsafe (unsafePerformIO)
 data CValue
   = String String
   | Whole Int
@@ -11,11 +11,28 @@ data CValue
   | Array [CValue]
   | Func ([CValue] -> Expression CValue)
 
+instance Show CValue where
+  show (String str) = 'c':show str
+  show (Whole int) = show int
+  show (Real double) = show double
+  show (Compound blah) = "{" ++ show blah ++ "}"
+  show (Array blah) = show blah
+  show (Func _) = show "<Function>"
+
+instance Eq CValue where
+  (Whole a) == (Whole b) = a == b
+  (Real a) == (Real b) = a == b
+  (String a) == (String b) = a == b
+  (Whole a) == (Real b) = a == truncate b
+  (Real a) == (Whole b) = truncate a == b
+  _ == _ = False
+  
+
 data LValue
   = Name String
 
 toLValue :: Expr -> LValue
-toLValue = undefined
+toLValue (Single (Ident a)) = Name a
 
 newtype Environment = Env ([(String, CValue)], Effect)
 
@@ -25,9 +42,12 @@ newtype Void = Void Void
 newtype Effect = Effect Void
 
 
+doTheThing :: Expression a -> Either Failure a
+doTheThing a = fmap fst $ eval a (Env ([], Effect makeVoid))
 
 makeVoid :: Void
 makeVoid = undefined
+
 
 
 assign :: LValue -> CValue -> Expression CValue
@@ -38,10 +58,13 @@ resolve name = Expr (\(Env (e, v)) -> case lookup name e of
    Just thing -> Right (thing, Env (e, v))
    Nothing -> Left (NotInScope name))
 
+transformIO :: IO a -> Expression a
+transformIO action = unsafePerformIO $ fmap return action
+
 crash :: Failure -> Expression a
 crash thing = Expr (const (Left thing))
 
-data Failure = Halt | NotInScope String | TypeError | NoMember String | DivideZero
+data Failure = Halt | NotInScope String | TypeError | NoMember String | DivideZero deriving (Show)
 
 newtype Expression a = Expr {eval :: (Environment -> Either Failure (a, Environment))}
 
@@ -101,7 +124,7 @@ memberAccess _ _ = crash TypeError
 
 arrayIndex :: CValue -> CValue -> Expression CValue
 arrayIndex (Array a) (Whole b) = return (a !! b)
-arrayIndex (String a) (Whole b) = return ([a !! b])
+arrayIndex (String a) (Whole b) = return (String [a !! b])
 arrayIndex _ _ = crash TypeError
 
 cTimes :: CValue -> CValue -> Expression CValue
@@ -119,7 +142,41 @@ cDivide (Real a) (Whole b) = return (Real $ a / fromIntegral b)
 cDivide (Real a) (Real b) = return (Real $ a / b)
 cDivide _ _ = crash TypeError
 
-    
+cMod _ (Whole 0) = crash DivideZero
+cMod _ (Real 0) = crash DivideZero
+cMod (Whole a) (Whole b) = return . Whole $ a `mod` b
+cMod (Whole a) (Real b) = return . Real $ modReal (fromIntegral a) b
+cMod (Real a) (Whole b) = return . Real $ modReal a (fromIntegral b)
+cMod (Real a) (Real b) = return . Real $ modReal a b
+cMod _ _ = crash TypeError
+
+cAdd (Whole a) (Whole b) = return . Whole $ a + b
+cAdd (Whole a) (Real b) = return . Real $ fromIntegral a + b
+cAdd (Real a) (Whole b) = return . Real $ a + fromIntegral b
+cAdd (Real a) (Real b) = return . Real $ a + b
+cAdd (String a) (String b) = return . String $ a ++ b
+cAdd (String a) b = return . String $ a ++ show b
+cAdd _ _ = crash TypeError
+
+cMinus (String a) _ = crash TypeError
+cMinus (a) (Real b) = cAdd a (Real $ negate b)
+cMinus (a) (Whole b) = cAdd a (Whole $ negate b)
+
+cCmp :: CValue -> CValue -> Expression Ordering
+cCmp (Whole a) (Whole b) = return $ compare a b
+cCmp (Real a) (Real b) = return $ compare a b
+cCmp (Whole a) (Real b) = return $ compare (fromIntegral a) b
+cCmp (Real a) (Whole b) = return $ compare a (fromIntegral b)
+cCmp (String a) (String b) = return $ compare a b
+cCmp _ _ = crash TypeError
+
+
+--modReal :: Double -> Double -> Double
+modReal a b =
+ let
+  thingy = a / b
+  blah = thingy - fromIntegral (truncate thingy)
+ in blah * b
 
 evaluate :: Expr -> Expression CValue
 evaluate (Single (Int a)) = return (Whole a)
@@ -174,7 +231,106 @@ evaluate (Infix "/" a b) = do
   x <- evaluate a
   y <- evaluate b
   cDivide x y
-
-  
-  
+evaluate (Infix "%" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  cMod x y
+evaluate (Infix "+" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  cAdd x y
+evaluate (Infix "-" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  cMinus x y
+evaluate (Infix ">" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  thing <- cCmp x y
+  return . Whole $ case thing of
+    GT -> 1
+    _ -> 0
+evaluate (Infix ">=" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  thing <- cCmp x y
+  return . Whole $ case thing of
+    GT -> 1
+    EQ -> 1
+    _ -> 0
+evaluate (Infix "<" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  thing <- cCmp x y
+  return . Whole $ case thing of
+    LT -> 1
+    _ -> 0
+evaluate (Infix "<=" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  thing <- cCmp x y
+  return . Whole $ case thing of
+    LT -> 1
+    EQ -> 1
+    _ -> 0
+evaluate (Infix "==" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  thing <- cCmp x y
+  return . Whole $ case thing of
+    EQ -> 1
+    _ -> 0
+evaluate (Infix "!=" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  thing <- cCmp x y
+  return . Whole $ case thing of
+    EQ -> 0
+    _ -> 1
+evaluate (Infix "&&" a b) = do
+  x <- evaluate a
+  if x == (Whole 0)
+    then return x
+    else evaluate b
+evaluate (Infix "||" a b) = do
+  x <- evaluate a
+  if x == (Whole 0)
+    then evaluate b
+    else return x
+evaluate (Trinary a b c) = do
+  x <- evaluate a
+  if x == (Whole 0)
+    then evaluate c
+    else evaluate b
+evaluate (Infix "=" a b) = do
+  x <- evaluate b
+  assign (toLValue a) x
+evaluate (Infix "+=" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  z <- cAdd x y
+  assign (toLValue a) z
+evaluate (Infix "-=" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  z <- cMinus x y
+  assign (toLValue a) z
+evaluate (Infix "*=" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  z <- cTimes x y
+  assign (toLValue a) z
+evaluate (Infix "/=" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  z <- cDivide x y
+  assign (toLValue a) z
+evaluate (Infix "%=" a b) = do
+  x <- evaluate a
+  y <- evaluate b
+  z <- cMod x y
+  assign (toLValue a) z
+evaluate (Infix "," a b) = do
+  evaluate a
+  evaluate b
   
