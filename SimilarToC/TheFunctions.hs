@@ -28,7 +28,8 @@ void f arg = do
 stdEnv' :: [(String, [CValue] -> Expression CValue)]
 stdEnv' = [
     ("putStr", oneArg . takeString $ void (transformIO1 putStr)),
-    ("getLine", const $ transformIO (fmap String getLine))]
+    ("getLine", const $ transformIO (fmap String getLine)),
+    ("print", oneArg $ void (transformIO1 print))]
 
 stdEnv = Env ((fmap fmap fmap Func) stdEnv', Effect makeVoid)
 
@@ -37,8 +38,19 @@ ident = Single . Ident
 
 str = Single . Str
 
+int = Single . Int
+
 myCrap = sequence_ $ map evaluate [
   Infix "=" (ident "line") (Call (ident "getLine")),
   CallArgs (ident "putStr") [str "hello, world!\n"],
   CallArgs (ident "putStr") [ident "line"],
   CallArgs (ident "putStr") [str "hello, world!\n"]]
+
+indexBug = sequence_ $ map evaluate [
+  Infix "=" (ident "arr") (ArrayLit [ArrayLit [int 0, int 1], ArrayLit [int 5, int 4], int 3]),
+  Infix "=" (ident "x") (int 0),
+  Infix "=" (Index (Index (ident "arr") (Postfix "++" (ident "x"))) (int 0)) (str "hi"),
+  CallArgs (ident "print") [ident "x"],
+  CallArgs (ident "print") [(ident "arr")]]
+  
+  

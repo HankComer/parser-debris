@@ -71,7 +71,7 @@ parseString = do
     char '"'
     return things
 
-oneOf :: String -> Parser Char
+oneOf :: [String] -> Parser String
 oneOf [] = empty
-oneOf (c:cs) = char c <|> oneOf cs
+oneOf (c:cs) = string c <|> oneOf cs
 

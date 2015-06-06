@@ -25,7 +25,7 @@ spaced thing = Parser $ (\s -> let
 parseProgram :: Parser Program
 parseProgram = undefined
 
-parseExpr :: Parser Expr
+parseExpr :: Parser EComma
 parseExpr = undefined
 
 parseInt :: Parser Int
@@ -42,9 +42,9 @@ parseIdentifier = do
 
 parseELeaf :: Parser ELeaf
 parseELeaf = (fmap Id (spaced parseIdentifier))
-    <|> (fmap (Num . Int) (spaced parseInt)) 
-    <|> (fmap (Num . Double) (spaced parseDouble))
-    <|> (fmap Str (spaced parseString))
+    <|> (fmap (Num . I) (spaced parseInt)) 
+    <|> (fmap (Num . D) (spaced parseDouble))
+    <|> (fmap String (spaced parseString))
     <|> do
         spaced (char '(')
         x <- parseExpr
