@@ -36,6 +36,9 @@ toLValue (Single (Ident a)) = Name a
 
 newtype Environment = Env ([(String, CValue)], Effect)
 
+instance Show Environment where
+  show (Env (asdf, _)) = show asdf
+
 
 newtype Void = Void Void
 
@@ -64,7 +67,7 @@ transformIO action = unsafePerformIO $ fmap return action
 crash :: Failure -> Expression a
 crash thing = Expr (const (Left thing))
 
-data Failure = Halt | NotInScope String | TypeError | NoMember String | DivideZero deriving (Show)
+data Failure = Halt | NotInScope String | TypeError | NoMember String | DivideZero | ArgError Int deriving (Show)
 
 newtype Expression a = Expr {eval :: (Environment -> Either Failure (a, Environment))}
 
