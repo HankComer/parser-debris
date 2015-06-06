@@ -42,6 +42,12 @@ p +++ q = Parser (\s -> case parse (p <|> q) s of
     [] -> []
     (x:xs) -> [x])
 
+infixl 3 <!>
+(<!>) :: Parser a -> Parser a -> Parser a
+p <!> q = Parser (\s -> case parse p s of
+    [] -> parse q s
+    a -> a)
+
 space :: Parser ()
 space = do
     many (char ' ')
@@ -70,6 +76,8 @@ parseString = do
     things <- many matchStringChar
     char '"'
     return things
+
+
 
 oneOf :: [String] -> Parser String
 oneOf [] = empty
