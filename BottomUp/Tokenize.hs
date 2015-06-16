@@ -2,17 +2,8 @@ module Tokenize where
 import ParserType
 import Data.Char (isAlpha, isDigit)
 import Control.Applicative
+import CommonData
 
-data Token
-  = Int Int
-  | Double Double
-  | String String
-  | Id String
-  | LParen
-  | RParen
-  | LBracket
-  | RBracket
-  | Op String deriving (Show, Eq)
 
 isId (Id _) = True
 isId _ = False
@@ -42,7 +33,7 @@ getId = spaced $ do
 
 getOp :: Parser Token
 getOp = spaced $ do
-    things <- some (oneOf $ fmap return "+=-~!#$%^&*<>,.?/:|")
+    things <- some (oneOf $ fmap return "+=-~#$%^&*<>,.?/:|")
     return (Op (concat things))
 
 getSymbol :: Parser Token
@@ -53,6 +44,8 @@ getSymbol = spaced $ do
         ')' -> return RParen
         '[' -> return LBracket
         ']' -> return RBracket
+        '!' -> return LambdaStart
+        '-' -> char '>' >> return LambdaArrow
         _ -> empty
 
 
@@ -76,6 +69,8 @@ backToString' LParen = "("
 backToString' RParen = ")"
 backToString' LBracket = "["
 backToString' RBracket = "]"
+backToString' LambdaStart = "!"
+backToSTring' LambdaArrow = " -> "
 
 backToString :: [Token] -> String
 backToString = (>>= backToString')

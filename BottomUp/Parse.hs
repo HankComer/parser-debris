@@ -1,7 +1,5 @@
 module Parse where
-import TokenMonad
-import Control.Applicative
-import Tokenizer
+import Reformat
 
 
-
+parse precs = translate . rearrange precs

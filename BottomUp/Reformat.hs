@@ -1,8 +1,9 @@
-module Reformat (rearrange, on) where
+module Reformat (on, rearrange, translate) where
 
 import Tokenize
 import TokenMonad
 import Control.Applicative
+import CommonData
 
 import Data.List
 
@@ -24,7 +25,7 @@ getPrec (R _ i) = i
 
 
 
-data Inter = Ap Inter Inter | Single Token | Group [Inter] deriving (Show, Eq)
+data Inter = Ap Inter Inter | Single Token | Group [Inter] | Abs' String Inter deriving (Show, Eq)
 
 
 
@@ -47,6 +48,15 @@ getApplication :: Consumer Token Inter
 getApplication = do
     thing <- getSingle
     getApplication' thing
+
+getAbs :: Consumer Token Inter
+getAbs = do
+    sat (== LambdaStart)
+    (Id n) <- sat isId
+    sat (== LambdaArrow)
+    blah <- some getWhole
+    return (Abs' n (Group blah))
+    
 
 
 getWhole = getApplication <|> getSingle <|> getOperator <|> getParens
@@ -111,6 +121,8 @@ reify' (Group [Group a]) = reify' (Group a)
 reify' (Group a) = LParen : (reify a) ++ [RParen]
 reify' (Single a) = [a]
 reify' (Ap a b) = LParen : reify' a ++ reify' b ++ [RParen]
+reify' (Abs' n (Group [a])) = reify' (Abs' n a)
+reify' (Abs' n a) = LParen : Id n : reify' a ++ [RParen]
 
 reify = (>>= reify')
 
@@ -119,5 +131,14 @@ format = doThing . tokenize
 
 
 
-rearrange :: [Prec] -> String -> [Token]
-rearrange precs = reify . (return . reorganize precs) . format
+rearrange :: [Prec] -> String -> Inter
+rearrange precs = reorganize precs . format
+
+
+translate :: Inter -> ParseTree
+translate (Single a) = Atom a
+translate (Ap a b) = Apply (translate a) (translate b)
+translate (Group [a]) = translate a
+translate (Group what) = error $ "Parse error? check translate " ++ show what
+translate (Abs' n blah) = Abs n (translate blah)
+
