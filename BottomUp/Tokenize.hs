@@ -12,7 +12,8 @@ data Token
   | RParen
   | LBracket
   | RBracket
-  | Op String deriving (Show, Eq)
+  | Op String
+  | Comma deriving (Show, Eq)
 
 
 
@@ -33,7 +34,7 @@ getId = spaced $ do
 
 getOp :: Parser Token
 getOp = spaced $ do
-    things <- some (oneOf $ fmap return "+=-~!#$%^&*<>.,?/:|")
+    things <- some (oneOf $ fmap return "+=-~!#$%^&*<>.?/:|")
     return (Op (concat things))
 
 getSymbol :: Parser Token
@@ -44,6 +45,7 @@ getSymbol = spaced $ do
         ')' -> return RParen
         '[' -> return LBracket
         ']' -> return RBracket
+        ',' -> return Comma
         _ -> empty
 
 
