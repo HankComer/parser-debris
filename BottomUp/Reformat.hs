@@ -106,5 +106,5 @@ format = doThing . tokenize
 
 
 
-rearrange :: String -> [Token]
-rearrange = reify . format
+rearrange :: [Prec] -> String -> [Token]
+rearrange precs = reify . (return . reorganize precs) . format
