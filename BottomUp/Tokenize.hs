@@ -12,10 +12,18 @@ data Token
   | RParen
   | LBracket
   | RBracket
-  | Op String
-  | Comma deriving (Show, Eq)
+  | Op String deriving (Show, Eq)
 
+isId (Id _) = True
+isId _ = False
 
+isOp (Op _) = True
+isOp _ = False
+
+isLit (Int _) = True
+isLit (Double _) = True
+isLit (String _) = True
+isLit _ = False
 
 getInt :: Parser Token
 getInt = fmap Int (Parser reads)
@@ -34,7 +42,7 @@ getId = spaced $ do
 
 getOp :: Parser Token
 getOp = spaced $ do
-    things <- some (oneOf $ fmap return "+=-~!#$%^&*<>.?/:|")
+    things <- some (oneOf $ fmap return "+=-~!#$%^&*<>,.?/:|")
     return (Op (concat things))
 
 getSymbol :: Parser Token
@@ -45,7 +53,6 @@ getSymbol = spaced $ do
         ')' -> return RParen
         '[' -> return LBracket
         ']' -> return RBracket
-        ',' -> return Comma
         _ -> empty
 
 

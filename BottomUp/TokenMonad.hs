@@ -41,3 +41,8 @@ sat p = do
     c <- item
     if p c then return c else empty
 
+
+terminal :: Consumer a b -> [a] -> Maybe b
+terminal foo str = case consume foo str of
+    (a, _):_ -> Just a
+    _ -> Nothing
