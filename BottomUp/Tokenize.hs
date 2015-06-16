@@ -64,3 +64,18 @@ tokenize :: String -> [Token]
 tokenize str = case terminal getTokens str of
     Just a -> a
     Nothing -> error "syntax error"
+
+
+backToString' :: Token -> String
+backToString' (Int i) = ' ':show i
+backToString' (String a) = show a
+backToString' (Double i) = ' ' : show i
+backToString' (Id a) = a ++ " "
+backToString' (Op a) = ' ':a ++ " "
+backToString' LParen = "("
+backToString' RParen = ")"
+backToString' LBracket = "["
+backToString' RBracket = "]"
+
+backToString :: [Token] -> String
+backToString = (>>= backToString')
