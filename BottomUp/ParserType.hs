@@ -47,6 +47,11 @@ instance Alternative Parser where
     many p = do
         some p +++ return []
 
+terminal :: Parser a -> String -> Maybe a
+terminal foo str = case parse foo str of
+    (a, _):_ -> Just a
+    _ -> Nothing
+
 
 (+++) :: Parser a -> Parser a -> Parser a
 p +++ q = Parser (\s -> case parse (p <|> q) s of
