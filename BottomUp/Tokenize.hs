@@ -50,13 +50,36 @@ getSymbol = spaced $ do
 
 
 
+
+
 getTokens :: Parser [Token]
 getTokens = many $ getInt <|> getDouble <|> getString <|> getId <|> getOp <|> getSymbol
+
+removeComment :: String -> String
+removeComment ('/':'/':_) = []
+removeComment (a:rest) = a:removeComment rest
+
+getPrecs :: [String] -> [Prec]
+getPrecs = fmap read
+
+codeAndMeta :: String -> (String, [String])
+codeAndMeta stuff =
+ let
+  blah = fmap removeComment $ lines stuff
+  meta = fmap (tail . dropWhile (/= '@')) blah
+  code = fmap (takeWhile (/= '@')) blah
+ in (unlines code, meta)
+  
+  
 
 tokenize :: String -> [Token]
 tokenize str = case terminal getTokens str of
     Just a -> a
     Nothing -> error "syntax error"
+
+tokensAndPrecs :: String -> ([Token], [Prec])
+tokensAndPrecs str = case codeAndMeta str of
+    (code, meta) -> (tokenize code, getPrecs meta)
 
 
 backToString' :: Token -> String

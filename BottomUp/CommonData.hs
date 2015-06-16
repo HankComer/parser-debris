@@ -16,3 +16,5 @@ data Token
 
 
 data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs String ParseTree
+
+data Prec = L String Int | R String Int deriving (Read, Show)

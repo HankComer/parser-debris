@@ -16,7 +16,7 @@ import Data.List
 
 
 
-data Prec = L String Int | R String Int
+
 
 getPrec :: Prec -> Int
 getPrec (L _ i) = i
@@ -133,6 +133,8 @@ format = doThing . tokenize
 
 rearrange :: [Prec] -> String -> Inter
 rearrange precs = reorganize precs . format
+
+obtain :: String -> ParseTree
 
 
 translate :: Inter -> ParseTree
