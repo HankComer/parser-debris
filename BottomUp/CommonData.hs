@@ -36,7 +36,7 @@ data PreDecl = FuncDec String [Pattern] [Token] | OpDec String Pattern Pattern [
 data RealDecl = Decl String [Pattern] ParseTree deriving (Show, Eq)
 
 
-data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs Pattern ParseTree | Unit | Tuple [ParseTree] deriving (Show, Eq)
+data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs Pattern ParseTree | Unit | Tuple [ParseTree] | Case ParseTree [ParseTree] deriving (Show, Eq)
 
 data Prec = L String Int | R String Int deriving (Read, Show)
 
@@ -56,5 +56,16 @@ data Value
   | UnitV
   | TupleV [Value]
   | Lam (Value -> Value)
+
+instance Show Value where
+  show (Thunk f a) = show (f a)
+  show (IntV a) = show a
+  show (DoubleV a) = show a
+  show UnitV = "()"
+  show (TupleV a) = show a
+  show (Lam _) = "<function>"
+  show (StringV a) = show a
+
+
 
 newtype Env = Env [(String, Value)]
