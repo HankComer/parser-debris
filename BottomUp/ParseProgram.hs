@@ -7,7 +7,7 @@ import Tokenize
 
 
 
-doEverything :: String -> [PreDecl]
+doEverything :: String -> [RealDecl]
 doEverything str = case tokensAndPrecs str of
   (code, precs) -> map (reDeclare precs) (preDecl code)
 
