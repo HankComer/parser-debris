@@ -32,7 +32,9 @@ data Pattern = UnitP | TupleP [Pattern] | VarP String | LitP Token deriving (Sho
 
 data PreDecl = FuncDec String [Pattern] [Token] | OpDec String Pattern Pattern [Token]
 
+data RealDecl = Decl String [Pattern] ParseTree deriving (Show, Eq)
 
-data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs String ParseTree
+
+data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs String ParseTree deriving (Show, Eq)
 
 data Prec = L String Int | R String Int deriving (Read, Show)

@@ -53,3 +53,14 @@ parseOpDec = do
     contents <- many $ sat (/= RBracket)
     sat (== RBracket)
     return $ OpDec name arg1 arg2 contents
+
+
+parseAll :: Consumer Token [PreDecl]
+parseAll = many (parseFuncDec <|> ParseOpDec)
+
+
+
+preDecl :: [Token] -> [PreDecl]
+preDecl toks = case terminal parseAll toks of
+    Just a -> a
+    Nothing -> error "error parsing decls"

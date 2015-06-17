@@ -1,4 +1,4 @@
-module Reformat (on, translate) where
+module Reformat (on, translate, doItAll) where
 
 import Tokenize
 import TokenMonad
@@ -127,15 +127,13 @@ reify' (Abs' n a) = LParen : Id n : reify' a ++ [RParen]
 
 reify = (>>= reify')
 
-format :: String -> [Inter]
-format = doThing . tokenize
+
+doItAll :: [Prec] -> [Token] -> ParseTree
+doItAll precs toks = translate $ reorganize precs (doThing toks)
 
 
 
 
-obtain :: String -> ParseTree
-obtain str = case tokensAndPrecs str of
-    (tokens, precs) -> translate $ reorganize precs (doThing tokens)
 
 
 translate :: Inter -> ParseTree
