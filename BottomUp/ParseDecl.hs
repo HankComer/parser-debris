@@ -56,7 +56,7 @@ parseOpDec = do
 
 
 parseAll :: Consumer Token [PreDecl]
-parseAll = many (parseFuncDec <|> ParseOpDec)
+parseAll = many (parseFuncDec <|> parseOpDec)
 
 
 
