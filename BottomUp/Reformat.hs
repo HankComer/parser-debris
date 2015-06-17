@@ -4,6 +4,7 @@ import Tokenize
 import TokenMonad
 import Control.Applicative
 import CommonData
+import ParseDecl (parseWhole)
 
 import Data.List
 
@@ -25,7 +26,7 @@ getPrec (R _ i) = i
 
 
 
-data Inter = Ap Inter Inter | Single Token | Group [Inter] | Abs' String Inter deriving (Show, Eq)
+data Inter = Ap Inter Inter | Single Token | Group [Inter] | Abs' Pattern Inter | Tuple' [Inter] | Unit' deriving (Show, Eq)
 
 
 
@@ -52,14 +53,28 @@ getApplication = do
 getAbs :: Consumer Token Inter
 getAbs = do
     sat (== LambdaStart)
-    (Id n) <- sat isId
+    arg <- parseWhole
     sat (== LambdaArrow)
     blah <- some getWhole
-    return (Abs' n (Group blah))
+    return (Abs' arg (Group blah))
+
+getTuple :: Consumer Token Inter
+getTuple = do
+    sat (== LParen)
+    first <- getWhole
+    rest <- many (sat (== Comma) >> getWhole)
+    sat (== RParen)
+    return (Tuple' (first : rest))
+
+getUnit :: Consumer Token Inter
+getUnit = do
+    sat (== LParen)
+    sat (== RParen)
+    return Unit'
     
 
 
-getWhole = getApplication <|> getSingle <|> getOperator <|> getParens
+getWhole = getApplication <|> getAbs <|> getTuple <|> getUnit <|> getSingle <|> getOperator <|> getParens
 
 getParens = do
     sat (== LParen)
@@ -112,20 +127,12 @@ reorganize precs things
 delve precs (Group a) = reorganize precs a
 delve precs (Ap a b) = Ap (delve precs a) (delve precs b)
 delve precs (Single a) = Single a
+delve precs (Abs' pat thing) = Abs' pat (delve precs thing)
+delve precs Unit' = Unit'
+delve precs (Tuple' blah) = Tuple' $ fmap (delve precs) blah
 
 
 
-
-reify' :: Inter -> [Token]
-reify' (Group [Single a]) = [a]
-reify' (Group [Group a]) = reify' (Group a)
-reify' (Group a) = LParen : (reify a) ++ [RParen]
-reify' (Single a) = [a]
-reify' (Ap a b) = LParen : reify' a ++ reify' b ++ [RParen]
-reify' (Abs' n (Group [a])) = reify' (Abs' n a)
-reify' (Abs' n a) = LParen : Id n : reify' a ++ [RParen]
-
-reify = (>>= reify')
 
 
 doItAll :: [Prec] -> [Token] -> ParseTree
@@ -142,4 +149,6 @@ translate (Ap a b) = Apply (translate a) (translate b)
 translate (Group [a]) = translate a
 translate (Group what) = error $ "Parse error? check translate " ++ show what
 translate (Abs' n blah) = Abs n (translate blah)
+translate Unit' = Unit
+translate (Tuple' blah) = Tuple (map translate blah)
 

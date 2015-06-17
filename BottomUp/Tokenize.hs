@@ -81,7 +81,7 @@ generateMissingPrecs precs toks =
 
 tokenize :: String -> [Token]
 tokenize str = case terminal getTokens str of
-    Just a -> a
+    Just a -> map (\foo -> case foo of {Op "->" -> LambdaArrow; blah -> blah}) a
     Nothing -> error "syntax error"
 
 tokensAndPrecs :: String -> ([Token], [Prec])
