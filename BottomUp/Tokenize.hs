@@ -61,7 +61,7 @@ codeAndMeta :: String -> (String, [String])
 codeAndMeta stuff =
  let
   blah = fmap removeComment $ lines stuff
-  meta = fmap (tail . dropWhile (/= '@')) blah
+  meta = fmap (\l -> case dropWhile (/= '@') l of {'@':rest -> rest; a -> a}) blah
   code = fmap (takeWhile (/= '@')) blah
  in (unlines code, meta)
   
