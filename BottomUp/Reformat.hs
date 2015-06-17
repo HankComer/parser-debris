@@ -1,4 +1,4 @@
-module Reformat (on, rearrange, translate) where
+module Reformat (on, translate) where
 
 import Tokenize
 import TokenMonad
@@ -96,6 +96,7 @@ findPlace (R op _) things = case findIndices (== Single (Op op)) things of
     [] -> Nothing
     blah -> Just $ last blah
 
+reorganize :: [Prec] -> [Inter] -> Inter
 reorganize precs things
  | any (\a -> case a of {Single (Op _) -> True; _ -> False}) things =
   case findPlace (highestPrec precs things) things of
@@ -131,10 +132,10 @@ format = doThing . tokenize
 
 
 
-rearrange :: [Prec] -> String -> Inter
-rearrange precs = reorganize precs . format
 
 obtain :: String -> ParseTree
+obtain str = case tokensAndPrecs str of
+    (tokens, precs) -> translate $ reorganize precs (doThing tokens)
 
 
 translate :: Inter -> ParseTree
