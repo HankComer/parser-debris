@@ -5,16 +5,7 @@ import Control.Applicative
 import CommonData
 
 
-isId (Id _) = True
-isId _ = False
 
-isOp (Op _) = True
-isOp _ = False
-
-isLit (Int _) = True
-isLit (Double _) = True
-isLit (String _) = True
-isLit _ = False
 
 getInt :: Parser Token
 getInt = fmap Int (Parser reads)
@@ -33,8 +24,9 @@ getId = spaced $ do
 
 getOp :: Parser Token
 getOp = spaced $ do
-    things <- some (oneOf $ fmap return "+=-~#$%^&*<>,.?/:|")
-    return (Op (concat things))
+    things <- some (oneOf $ fmap return "+-~#$%^&*<>.?/:|")
+    things' <- many (oneOf $ fmap return "+-=~#$%^&*<>.?/:|")
+    return (Op (concat things ++ concat things'))
 
 getSymbol :: Parser Token
 getSymbol = spaced $ do
@@ -46,6 +38,8 @@ getSymbol = spaced $ do
         ']' -> return RBracket
         '!' -> return LambdaStart
         '-' -> char '>' >> return LambdaArrow
+        ',' -> return Comma
+        '=' -> return Equals
         _ -> empty
 
 
