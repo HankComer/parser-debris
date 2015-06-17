@@ -50,6 +50,7 @@ getTokens :: Parser [Token]
 getTokens = many $ getInt <|> getDouble <|> getString <|> getId <|> getOp <|> getSymbol
 
 removeComment :: String -> String
+removeComment [] = []
 removeComment ('/':'/':_) = []
 removeComment (a:rest) = a:removeComment rest
 
