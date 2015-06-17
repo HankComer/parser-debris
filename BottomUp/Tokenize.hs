@@ -55,7 +55,8 @@ removeComment ('/':'/':_) = []
 removeComment (a:rest) = a:removeComment rest
 
 getPrecs :: [String] -> [Prec]
-getPrecs = fmap read
+getPrecs strs = fmap read (filter (/= "") strs)
+
 
 codeAndMeta :: String -> (String, [String])
 codeAndMeta stuff =
@@ -65,7 +66,15 @@ codeAndMeta stuff =
   code = fmap (takeWhile (/= '@')) blah
  in (unlines code, meta)
   
-  
+-- Assumes that missing prec means left associative, precedence 9
+generateMissingPrecs :: [Prec] -> [Token] -> [Prec]
+generateMissingPrecs precs toks =
+ let
+  things = filter isOp toks
+  notPresent (Op a) = not $ a `elem` fmap precGetOpStr precs
+  notThere = filter notPresent things
+ in precs ++ fmap (\(Op foo) -> L foo 9) notThere
+
 
 tokenize :: String -> [Token]
 tokenize str = case terminal getTokens str of
@@ -74,7 +83,10 @@ tokenize str = case terminal getTokens str of
 
 tokensAndPrecs :: String -> ([Token], [Prec])
 tokensAndPrecs str = case codeAndMeta str of
-    (code, meta) -> (tokenize code, getPrecs meta)
+    (code, meta) -> let
+      blah = tokenize code
+      foo = getPrecs meta
+     in (blah, generateMissingPrecs foo blah)
 
 
 backToString' :: Token -> String
