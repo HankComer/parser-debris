@@ -13,6 +13,7 @@ data Token
   | Op String
   | Comma
   | Equals
+  | Quote
   | LambdaStart
   | LambdaArrow deriving (Show, Eq)
 
@@ -28,14 +29,14 @@ isLit (String _) = True
 isLit _ = False
 
 
-data Pattern = UnitP | TupleP [Pattern] | VarP String | LitP Token deriving (Show, Eq)
+data Pattern = UnitP | TupleP [Pattern] | VarP String | LitP Token | UnQuote Pattern deriving (Show, Eq)
 
 data PreDecl = FuncDec String [Pattern] [Token] | OpDec String Pattern Pattern [Token]
 
 data RealDecl = Decl String [Pattern] ParseTree deriving (Show, Eq)
 
 
-data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs String ParseTree deriving (Show, Eq)
+data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs String ParseTree | Quoting ParseTree deriving (Show, Eq)
 
 data Prec = L String Int | R String Int deriving (Read, Show)
 

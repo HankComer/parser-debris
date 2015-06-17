@@ -30,7 +30,7 @@ parseWhole' :: Consumer Token Pattern
 parseWhole' = parseUnit <|> parseTuple <|> parseVar <|> parseLit
 
 parseWhole :: Consumer Token Pattern
-parseWhole = parseWhole' <|> (do {sat (== LParen); blah <- parseWhole; sat (== RParen); return blah})
+parseWhole = parseWhole' <|> (do {sat (== LParen); blah <- parseWhole; sat (== RParen); return blah}) <|> (sat (== Quote) >> fmap UnQuote parseWhole)
 
 
 parseFuncDec :: Consumer Token PreDecl

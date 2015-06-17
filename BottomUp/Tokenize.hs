@@ -29,8 +29,10 @@ getOp = spaced $ do
     return (Op (concat things ++ concat things'))
 
 getSymbol :: Parser Token
-getSymbol = spaced $ do
+getSymbol = do
+    space
     thing <- item
+    space
     case thing of
         '(' -> return LParen
         ')' -> return RParen
@@ -40,6 +42,7 @@ getSymbol = spaced $ do
         '-' -> char '>' >> return LambdaArrow
         ',' -> return Comma
         '=' -> return Equals
+        '\'' -> return Quote
         _ -> empty
 
 
