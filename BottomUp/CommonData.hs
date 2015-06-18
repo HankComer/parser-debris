@@ -59,6 +59,27 @@ data Value
   | Lam (Value -> Value)
   | IO (IO Value)
 
+unInt (IntV i) = i
+unInt (Thunk f a) = unInt (f a)
+unInt a = error $ "type error: expected Int, found " ++ show a
+
+unDouble (DoubleV i) = i
+unDouble (Thunk f a) = unDouble (f a)
+unDouble (IntV i) = fromIntegral i
+unDouble a = error $ "type error: expected Double, found " ++ show a
+
+unString (StringV i) = i
+unString (Thunk f a) = unString (f a)
+unString a = error $ "type error: expected String, found " ++ show a
+
+unLam (Lam f) = f
+unLam (Thunk f a) = unLam (f a)
+unLam a = error $ "type error: expected function, found " ++ show a
+
+unIO (IO a) = a
+unIO (Thunk f a) = unIO (f a)
+unIO a = error $ "type error: expected IO value, found " ++ show a
+
 instance Show Value where
   show (Thunk f a) = "Thunk " ++ show (f a)
   show (IntV a) = show a
