@@ -47,7 +47,7 @@ getApplication' thing = do
 
 getApplication :: Consumer Token Inter
 getApplication = do
-    thing <- getSingle
+    thing <- (getSingle <|> getParens)
     getApplication' thing
 
 getAbs :: Consumer Token Inter

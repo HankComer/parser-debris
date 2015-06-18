@@ -50,7 +50,9 @@ oneLayer (Thunk f l) = f l
 oneLayer a = a
 
 match :: Pattern -> Value -> Env
-match = undefined
+match blah foo = case match' blah foo of
+    Just a -> a
+    Nothing -> error "Pattern match failure"
 
 match' :: Pattern -> Value -> Maybe Env
 match' (UnQuote a) b = match' a (deepEval b)
