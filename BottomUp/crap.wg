@@ -1,9 +1,11 @@
 @L ">>=" 1
 @L ">>" 1
 
-import <StdEnv>
+@L ":" 5
 
-main = [
-putStrLn "foo" >>
-getLine >>= (! response ->
-putStrLn response >> putStrLn response)]
+import <StdEnv>
+import "lists"
+
+things = [1:2:3:4:5:()]
+
+main = [tail things]
