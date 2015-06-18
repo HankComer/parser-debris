@@ -1,7 +1,7 @@
 module StdLib where
 import CommonData
 import Control.Monad (join)
-
+import Utils
 
 
 
@@ -21,7 +21,7 @@ chainIO :: Value
 chainIO = Lam (\(IO a) -> Lam (\(IO b) -> IO (a >> b)))
 
 
-bindIO = Lam (\(IO a) -> Lam (\(Lam f) -> IO $ do
-    (IO dingus) <- fmap f a
-    dingus))
+bindIO = Lam $ with (\(IO a) -> Lam $ with (\(Lam f) -> IO $ do
+    (IO r) <- fmap f a
+    r))
 

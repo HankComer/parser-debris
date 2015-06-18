@@ -1,5 +1,5 @@
 module CommonData where
-
+import System.IO.Unsafe (unsafePerformIO)
 
 
 data Token
@@ -60,13 +60,16 @@ data Value
   | IO (IO Value)
 
 instance Show Value where
-  show (Thunk f a) = show (f a)
+  show (Thunk f a) = "Thunk " ++ show (f a)
   show (IntV a) = show a
   show (DoubleV a) = show a
   show UnitV = "()"
   show (TupleV a) = show a
   show (Lam _) = "<function>"
   show (StringV a) = show a
+  show (IO a) = case unsafePerformIO a of
+    UnitV -> ""
+    b -> "IO " ++ show b
 
 
 
