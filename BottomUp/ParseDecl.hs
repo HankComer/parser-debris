@@ -14,7 +14,7 @@ parseTuple :: Consumer Token Pattern
 parseTuple = do
   sat (== LParen)
   first <- parseWhole
-  rest <- many (sat (== Comma) >> parseWhole)
+  rest <- some (sat (== Comma) >> parseWhole)
   sat (== RParen)
   return (TupleP (first:rest))
 

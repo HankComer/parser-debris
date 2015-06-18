@@ -74,3 +74,5 @@ instance Show Value where
 
 
 newtype Env = Env [(String, Value)] deriving (Show)
+squish :: Env -> Env -> Env
+squish (Env a) (Env b) = Env $ b ++ a

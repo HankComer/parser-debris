@@ -32,7 +32,7 @@ data Inter = Ap Inter Inter | Single Token | Group [Inter] | Abs' Pattern Inter 
 
 applic :: Inter -> Consumer Token Inter
 applic thing = do
-    blah <- getSingle <|> getParens
+    blah <- getAbs <|> getTuple <|> getUnit <|> getSingle <|> getParens
     return $ Ap thing blah
 
 

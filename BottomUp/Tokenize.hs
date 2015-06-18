@@ -63,7 +63,7 @@ removeImports str =
  let
   things = map (dropWhile isSpace) (lines str)
   imports = fmap (drop 6) $ filter (isPrefixOf "import") things
-  rest = concat $ filter (not . isPrefixOf "import") things
+  rest = unlines $ filter (not . isPrefixOf "import") things
  in (imports, rest)
 
 getPrecs :: [String] -> [Prec]

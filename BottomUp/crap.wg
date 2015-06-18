@@ -1,4 +1,9 @@
 @L ">>=" 1
 @L ">>" 1
 
-main = [getLine >>= putStrLn]
+import <StdEnv>
+
+main = [
+putStrLn "foo" >>
+getLine >>= (! response ->
+putStrLn response >> putStrLn response)]

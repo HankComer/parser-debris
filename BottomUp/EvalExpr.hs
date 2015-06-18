@@ -4,8 +4,7 @@ import Control.Monad (zipWithM)
 
 
 
-squish :: Env -> Env -> Env
-squish (Env a) (Env b) = Env $ b ++ a
+
 
 resolve :: Env -> Env -> String -> Value
 resolve (Env globals) (Env locals) str = case lookup str locals of
@@ -16,12 +15,13 @@ resolve (Env globals) (Env locals) str = case lookup str locals of
 
 
 eval :: Env -> Env -> ParseTree -> Value
+eval = rewrite
+{-
 eval _ _ (Atom (Int a)) = IntV a
 eval _ _ (Atom (Double a)) = DoubleV a
 eval _ _ (Atom (String a)) = StringV a
 eval globals locals (Atom (Id a)) = Thunk (\l -> resolve globals l a) locals
 eval globals locals (Atom (Op a)) = resolve globals locals a
---eval globals locals (Abs (UnQuote pat) body) = Lam (\arg -> Thunk (\l -> eval globals (squish l (match pat (deepEval arg))) body) locals)
 eval globals locals (Abs pat body) = Lam (\arg -> Thunk (\l -> eval globals (squish l (match pat arg)) body) locals)
 eval globals locals (Apply a b) = Thunk (\l -> apply (eval globals l a) (eval globals l b)) locals
 eval globals locals (Case asdf' things) =
@@ -38,14 +38,41 @@ eval globals locals (Case asdf' things) =
 eval globals locals Unit = UnitV
 eval globals locals (Tuple blah) = TupleV (map (eval globals locals) blah)
 eval globals locals crap = error $ "eval doesn't recognize " ++ show crap
+-}
+
+rewrite :: Env -> Env -> ParseTree -> Value
+rewrite _ _ (Atom (Int a)) = IntV a
+rewrite _ _ (Atom (Double a)) = DoubleV a
+rewrite _ _ (Atom (String a)) = StringV a
+rewrite globals locals (Atom (Id a)) = Thunk (\l -> resolve globals l a) locals
+rewrite globals locals (Atom (Op a)) = resolve globals locals a
+rewrite globals locals (Abs pat body) = Thunk (\locals' -> Lam (\arg -> Thunk (\l -> rewrite globals (squish l (match pat arg)) body) locals')) locals
+rewrite globals locals (Apply a b) = Thunk (\l -> apply (rewrite globals l a) (rewrite globals l b)) locals
+rewrite globals locals (Case asdf' things) =
+ let
+  asdf = rewrite globals locals asdf'
+  blah :: [(Pattern, ParseTree)]
+  blah = map (\(Abs a b) -> (a, b)) things
+  thing :: [(Pattern, ParseTree)] -> Env -> Value
+  thing [] l = error "Pattern match failure in case expression"
+  thing ((pat, body):rest) l = case match' pat asdf of
+    Just env -> rewrite globals (squish l env) body
+    Nothing -> thing rest l
+  in Thunk (thing blah) locals
+rewrite globals locals Unit = UnitV
+rewrite globals locals (Tuple blah) = Thunk (\l -> TupleV $ map (rewrite globals l) blah) locals
+rewrite globals locals crap = error $ "Can't rewrite " ++ show crap
 
 apply (Lam a) = a
 apply (Thunk f a) = apply (f a)
 
 deepEval :: Value -> Value
 deepEval (Thunk f locals) = deepEval $ f locals
-deepEval (TupleV things) = TupleV $ fmap deepEval things
+deepEval (TupleV things) = let {foo = deepList things} in foo `seq` TupleV foo
 deepEval a = a
+
+deepList [] = []
+deepList (a:rest) = let {foo = deepEval a} in foo `seq` foo : deepList rest
 
 oneLayer :: Value -> Value
 oneLayer (Thunk f l) = f l
@@ -54,7 +81,7 @@ oneLayer a = a
 match :: Pattern -> Value -> Env
 match blah foo = case match' blah foo of
     Just a -> a
-    Nothing -> error "Pattern match failure"
+    Nothing -> error $ "Pattern match failure: " ++ show blah ++ " AND " ++ show foo
 
 match' :: Pattern -> Value -> Maybe Env
 match' (UnQuote a) b = match' a (deepEval b)
