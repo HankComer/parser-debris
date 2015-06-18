@@ -1,6 +1,7 @@
 module CommonData where
 
 
+
 data Token
   = Int Int
   | Double Double
@@ -56,6 +57,7 @@ data Value
   | UnitV
   | TupleV [Value]
   | Lam (Value -> Value)
+  | IO (IO Value)
 
 instance Show Value where
   show (Thunk f a) = show (f a)
