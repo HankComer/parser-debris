@@ -2,10 +2,25 @@
 @L ">>" 1
 
 @L ":" 5
+@L "==" 4
 
 import <StdEnv>
 import "lists"
 
 things = [1:2:3:4:5:()]
 
-main = [tail things]
+main = [getLine >>= (!a -> (!list -> (head list == "a") (putStrLn "typed an a") (putStrLn "typed not an a"))(strToList a))]
+
+
+strToList "" = [()]
+strToList a = [(headStr a, strToList (tailStr a))]
+
+listToStr () = [""]
+listToStr (a, rest) = [strCat a (listToStr rest)]
+
+intToBool 0 a b = [b]
+intToBool x a b = [a]
+
+//main = [mapIO (!a -> head (strToList a)) getLine]
+
+a == b = [intToBool (primEq a b)]

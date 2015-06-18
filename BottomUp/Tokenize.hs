@@ -25,7 +25,7 @@ getId = spaced $ do
 
 getOp :: Parser Token
 getOp = spaced $ do
-    things <- some (oneOf $ fmap return "+-~#$%^&*<>.?/:|")
+    things <- some (oneOf $ fmap return "+-~=#$%^&*<>.?/:|")
     things' <- many (oneOf $ fmap return "+-=~#$%^&*<>.?/:|")
     return (Op (concat things ++ concat things'))
 
@@ -51,7 +51,7 @@ getSymbol = do
 
 
 getTokens :: Parser [Token]
-getTokens = many $ getInt <|> getDouble <|> getString <|> getId <|> getOp <|> getSymbol
+getTokens = many $ getInt <|> getDouble <|> getString <|> getId <|> getOp <|> getSymbol 
 
 removeComment :: String -> String
 removeComment [] = []
@@ -90,7 +90,7 @@ generateMissingPrecs precs toks =
 
 tokenize :: String -> [Token]
 tokenize str = case terminal getTokens str of
-    Just a -> map (\foo -> case foo of {Op "->" -> LambdaArrow; blah -> blah}) a
+    Just a -> map (\foo -> case foo of {Op "->" -> LambdaArrow; Op "=" -> Equals; blah -> blah}) a
     Nothing -> error "syntax error"
 
 tokensAndPrecs :: String -> ([Token], [Prec])

@@ -12,7 +12,11 @@ stdEnv = Env [
   (">>=", bindIO),
   (">>", chainIO),
   ("getLine", IO (fmap StringV getLine)),
-  ("putStrLn", Lam $ with (\(StringV a) -> IO (putStrLn a >> return UnitV)))]
+  ("putStrLn", Lam $ with (\(StringV a) -> IO (putStrLn a >> return UnitV))),
+  ("strCat", strCat),
+  ("primEq", primEq),
+  ("headStr", headStr),
+  ("tailStr", tailStr)]
 
 
 mapIO :: Value
@@ -29,3 +33,16 @@ bindIO = Lam $ with (\(IO a) -> Lam $ with (\x -> case x of
         IO dingus -> dingus
         notIO -> error $ "bindIO's do again " ++ show notIO
   blah -> error $ "bindIO again " ++ show blah))
+
+strCat :: Value
+strCat = Lam (\a -> Lam (\b -> StringV (unString a ++ unString b)))
+
+primEq' :: Value -> Value -> Int
+primEq' a b = if a == b then 1 else 0
+
+primEq :: Value
+primEq = Lam $ with (\a -> Lam $ with (\b -> IntV (primEq' a b)))
+
+headStr = Lam (\a -> StringV [head $ unString a])
+
+tailStr = Lam (\a -> StringV (tail $ unString a))

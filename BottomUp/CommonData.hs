@@ -81,7 +81,7 @@ unIO (Thunk f a) = unIO (f a)
 unIO a = error $ "type error: expected IO value, found " ++ show a
 
 instance Show Value where
-  show (Thunk f a) = "Thunk " ++ show (f a)
+  show (Thunk f a) = {-"Thunk " ++ -}show (f a)
   show (IntV a) = show a
   show (DoubleV a) = show a
   show UnitV = "()"
@@ -91,6 +91,16 @@ instance Show Value where
   show (IO a) = case unsafePerformIO a of
     UnitV -> ""
     b -> "IO " ++ show b
+
+instance Eq Value where
+  (Thunk f a) == b = (f a) == b
+  a == (Thunk f b) = a == (f b)
+  (IntV a) == (IntV b) = a == b
+  (DoubleV a) == (DoubleV b) = a == b
+  (StringV a) == (StringV b) = a == b
+  (TupleV a) == (TupleV b) = a == b
+  UnitV == UnitV = True
+  _ == _ = False
 
 
 

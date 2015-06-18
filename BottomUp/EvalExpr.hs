@@ -32,7 +32,7 @@ rewrite globals locals (Case asdf' things) =
   blah :: [(Pattern, ParseTree)]
   blah = map (\(Abs a b) -> (a, b)) things
   thing :: [(Pattern, ParseTree)] -> Env -> Value
-  thing [] l = error $ "Pattern match failure in case expression: " ++ show blah
+  thing [] l = error $ "Pattern match failure in case expression: " ++ show blah ++ "\nThe value: " ++ show asdf
   thing ((pat, body):rest) l = case match' pat asdf of
     Just env -> rewrite globals (squish l env) body
     Nothing -> thing rest l
