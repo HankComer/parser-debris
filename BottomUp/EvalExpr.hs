@@ -60,6 +60,7 @@ rewrite globals locals (Case asdf' things) =
     Nothing -> thing rest l
   in Thunk (thing blah) locals
 rewrite globals locals Unit = UnitV
+rewrite globals locals (Tuple [blah]) = rewrite globals locals blah
 rewrite globals locals (Tuple blah) = Thunk (\l -> TupleV $ map (rewrite globals l) blah) locals
 rewrite globals locals crap = error $ "Can't rewrite " ++ show crap
 
@@ -70,6 +71,9 @@ deepEval :: Value -> Value
 deepEval (Thunk f locals) = deepEval $ f locals
 deepEval (TupleV things) = let {foo = deepList things} in foo `seq` TupleV foo
 deepEval a = a
+
+compress (Thunk f a) = compress $ f a
+compress a = a
 
 deepList [] = []
 deepList (a:rest) = let {foo = deepEval a} in foo `seq` foo : deepList rest
