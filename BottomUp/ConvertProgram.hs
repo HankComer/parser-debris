@@ -45,8 +45,8 @@ makeGlobals :: Env -> [RealDecl] -> Env
 makeGlobals g decls =
  let
   things = getFuncs decls
-  blah = map (\decs -> convert decs globals) things
-  globals = squish g (Env blah)
+  blah = map (\decs -> convert decs (squish g globals)) things
+  globals = Env blah
  in globals
 
 

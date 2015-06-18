@@ -24,4 +24,3 @@ chainIO = Lam (\(IO a) -> Lam (\(IO b) -> IO (a >> b)))
 bindIO = Lam $ with (\(IO a) -> Lam $ with (\(Lam f) -> IO $ do
     (IO r) <- fmap f a
     r))
-

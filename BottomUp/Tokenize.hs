@@ -1,8 +1,9 @@
 module Tokenize where
 import ParserType
-import Data.Char (isAlpha, isDigit)
+import Data.Char (isAlpha, isDigit, isSpace)
 import Control.Applicative
 import CommonData
+import Data.List (isPrefixOf)
 
 
 
@@ -56,6 +57,14 @@ removeComment :: String -> String
 removeComment [] = []
 removeComment ('/':'/':_) = []
 removeComment (a:rest) = a:removeComment rest
+
+removeImports :: String -> ([String], String)
+removeImports str = 
+ let
+  things = map (dropWhile isSpace) (lines str)
+  imports = fmap (drop 6) $ filter (isPrefixOf "import") things
+  rest = concat $ filter (not . isPrefixOf "import") things
+ in (imports, rest)
 
 getPrecs :: [String] -> [Prec]
 getPrecs strs = fmap read (filter (/= "") strs)

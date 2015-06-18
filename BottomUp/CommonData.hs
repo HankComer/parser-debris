@@ -73,4 +73,4 @@ instance Show Value where
 
 
 
-newtype Env = Env [(String, Value)]
+newtype Env = Env [(String, Value)] deriving (Show)
