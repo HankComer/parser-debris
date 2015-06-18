@@ -41,12 +41,12 @@ makeDeclValue decls globals =
 convert :: [RealDecl] -> Env -> (String, Value)
 convert decls@((Decl name _ _):_) globals = (name, makeDeclValue decls globals)
 
-makeGlobals :: [RealDecl] -> Env
-makeGlobals decls =
+makeGlobals :: Env -> [RealDecl] -> Env
+makeGlobals g decls =
  let
   things = getFuncs decls
   blah = map (\decs -> convert decs globals) things
-  globals = Env blah
+  globals = squish g (Env blah)
  in globals
 
 

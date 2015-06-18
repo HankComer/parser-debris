@@ -20,6 +20,7 @@ eval _ _ (Atom (Int a)) = IntV a
 eval _ _ (Atom (Double a)) = DoubleV a
 eval _ _ (Atom (String a)) = StringV a
 eval globals locals (Atom (Id a)) = Thunk (\l -> resolve globals l a) locals
+eval globals locals (Atom (Op a)) = resolve globals locals a
 --eval globals locals (Abs (UnQuote pat) body) = Lam (\arg -> Thunk (\l -> eval globals (squish l (match pat (deepEval arg))) body) locals)
 eval globals locals (Abs pat body) = Lam (\arg -> Thunk (\l -> eval globals (squish l (match pat arg)) body) locals)
 eval globals locals (Apply a b) = Thunk (\l -> apply (eval globals l a) (eval globals l b)) locals
@@ -36,6 +37,7 @@ eval globals locals (Case asdf' things) =
   in thing blah
 eval globals locals Unit = UnitV
 eval globals locals (Tuple blah) = TupleV (map (eval globals locals) blah)
+eval globals locals crap = error $ "eval doesn't recognize " ++ show crap
 
 apply (Lam a) = a
 apply (Thunk f a) = apply (f a)
@@ -58,7 +60,7 @@ match' :: Pattern -> Value -> Maybe Env
 match' (UnQuote a) b = match' a (deepEval b)
 match' (VarP str) a = Just (Env [(str, a)])
 match' a (Thunk f x) = match' a (f x)
-match' (TupleP a) (TupleV b) = if length a == length b then (fmap (foldr1 squish) $ zipWithM match' a b) else Nothing
+match' (TupleP a) (TupleV b) = if length a == length b then if a == [] then (Just $ Env []) else (fmap (foldr1 squish) $ zipWithM match' a b) else Nothing
 match' (LitP (Double a)) (DoubleV b) = if a == b then Just (Env []) else Nothing
 match' (LitP (Int a)) (IntV b) = if a == b then Just (Env []) else Nothing
 match' (LitP (String a)) (StringV b) = if a == b then Just (Env []) else Nothing
