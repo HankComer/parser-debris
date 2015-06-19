@@ -32,6 +32,10 @@ parseWhole' = parseUnit <|> parseTuple <|> parseVar <|> parseLit
 parseWhole :: Consumer Token Pattern
 parseWhole = parseWhole' <|> (do {sat (== LParen); blah <- parseWhole; sat (== RParen); return blah}) <|> (sat (== Quote) >> fmap UnQuote parseWhole)
 
+parsePat :: [Token] -> Pattern
+parsePat toks = case terminal parseWhole toks of
+    Just a -> a
+    Nothing -> error $ "Error parsing a pattern: " ++ show toks
 
 parseFuncDec :: Consumer Token PreDecl
 parseFuncDec = do

@@ -4,7 +4,7 @@ import Tokenize
 import TokenMonad
 import Control.Applicative
 import CommonData
-import ParseDecl (parseWhole)
+import ParseDecl (parseWhole, parsePat)
 
 import Data.List
 
@@ -26,7 +26,8 @@ getPrec (R _ i) = i
 
 
 
-data Inter = Ap Inter Inter | Single Token | Group [Inter] | Abs' Pattern Inter | Tuple' [Inter] | Unit' deriving (Show, Eq)
+data Inter = Ap Inter Inter | Single Token | Group [Inter] | Abs' Pattern Inter
+  | Tuple' [Inter] | Unit' | Case' Inter [([Token], Inter)] deriving (Show, Eq)
 
 
 
@@ -71,10 +72,28 @@ getUnit = do
     sat (== LParen)
     sat (== RParen)
     return Unit'
+
+getCase :: Consumer Token Inter
+getCase = do
+    sat (== CaseStart)
+    blah <- getWhole
+    sat (== CaseOf)
+    sat (== LCurly)
+    clauses <- some getCaseClause
+    sat (== RCurly)
+    return (Case' blah clauses)
+
+getCaseClause :: Consumer Token ([Token], Inter)
+getCaseClause = do
+    things <- some $ sat (/= LambdaArrow)
+    sat (== LambdaArrow)
+    blah <- getWhole
+    sat (== SemiColon)
+    return (things, blah)
     
 
 
-getWhole = getApplication <|> getAbs <|> getTuple <|> getUnit <|> getSingle <|> getOperator <|> getParens
+getWhole = getApplication <|> getAbs <|> getTuple <|> getUnit <|> getSingle <|> getOperator <|> getParens <|> getCase
 
 getParens = do
     sat (== LParen)
@@ -130,6 +149,7 @@ delve precs (Single a) = Single a
 delve precs (Abs' pat thing) = Abs' pat (delve precs thing)
 delve precs Unit' = Unit'
 delve precs (Tuple' blah) = Tuple' $ fmap (delve precs) blah
+delve precs (Case' arg things) = Case' (delve precs arg) $ map (\(a, b) -> (a, delve precs b)) things
 
 
 
@@ -151,4 +171,5 @@ translate (Group what) = error $ "Parse error? check translate " ++ show what
 translate (Abs' n blah) = Abs n (translate blah)
 translate Unit' = Unit
 translate (Tuple' blah) = Tuple (map translate blah)
+translate (Case' arg clauses) = Case (translate arg) $ map (\(left, right) -> (parsePat left, translate right)) clauses
 

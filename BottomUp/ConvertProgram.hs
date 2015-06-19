@@ -32,7 +32,7 @@ validateNumArgs decls =
 makeDeclValue :: [RealDecl] -> Env -> Value
 makeDeclValue decls globals =
  let
-  transform (Decl n args body) = Abs (TupleP args) body
+  transform (Decl n args body) = (TupleP args, body)
   pats = fmap transform decls
   argNum = numArgs (head decls)
   tree = unfoldArgs (map VarP (makeArgs argNum)) $ Case (Tuple (map (Atom . Id) $ makeArgs argNum)) pats

@@ -21,7 +21,10 @@ getId :: Parser Token
 getId = spaced $ do
     first <- some (sat isAlpha <|> char '_')
     rest <- many (sat isAlpha <|> sat isDigit <|> char '_')
-    return (Id $ first ++ rest)
+    return $ case first ++ rest of
+        "case" -> CaseStart
+        "of" -> CaseOf
+        a -> Id a
 
 getOp :: Parser Token
 getOp = spaced $ do
@@ -33,7 +36,7 @@ getSymbol :: Parser Token
 getSymbol = do
     space
     thing <- item
-    space
+    many (sat isSpace)
     case thing of
         '(' -> return LParen
         ')' -> return RParen
@@ -44,6 +47,9 @@ getSymbol = do
         ',' -> return Comma
         '=' -> return Equals
         '\'' -> return Quote
+        ';' -> return SemiColon
+        '{' -> return LCurly
+        '}' -> return RCurly
         _ -> empty
 
 
@@ -94,7 +100,8 @@ tokenize str = case terminal getTokens str of
     Nothing -> error "syntax error"
 
 tokensAndPrecs :: String -> ([Token], [Prec])
-tokensAndPrecs str = case codeAndMeta str of
+tokensAndPrecs str = case removeImports str of
+  (imports, str') -> case codeAndMeta str' of
     (code, meta) -> let
       blah = tokenize code
       foo = getPrecs meta

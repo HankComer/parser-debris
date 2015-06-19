@@ -48,5 +48,11 @@ loadFile fname = do
 importSimple (blah, User) = do
     (str, env) <- loadFile (blah ++ ".wg")
     return (getEnv env str)
-importSimple (blah, Builtin) = case blah of
-    "StdEnv" -> return stdEnv
+importSimple (blah, Builtin) = case lookup blah libs of
+    Just a -> return a
+    Nothing -> error $ "couldn't find library '" ++ blah ++ "'"
+   
+
+
+libs = [
+  ("StdEnv", stdEnv)]

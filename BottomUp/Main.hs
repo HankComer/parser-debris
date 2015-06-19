@@ -21,3 +21,7 @@ loadAndRun fname = do
     (text, env) <- loadFile fname
     return $ importAndRun env text
     
+
+main = do
+  val <- loadAndRun "main.wg"
+  print val

@@ -15,7 +15,12 @@ data Token
   | Comma
   | Equals
   | Quote
+  | SemiColon
   | LambdaStart
+  | CaseStart
+  | CaseOf
+  | LCurly
+  | RCurly
   | LambdaArrow deriving (Show, Eq)
 
 isId (Id _) = True
@@ -37,7 +42,7 @@ data PreDecl = FuncDec String [Pattern] [Token] | OpDec String Pattern Pattern [
 data RealDecl = Decl String [Pattern] ParseTree deriving (Show, Eq)
 
 
-data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs Pattern ParseTree | Unit | Tuple [ParseTree] | Case ParseTree [ParseTree] deriving (Show, Eq)
+data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs Pattern ParseTree | Unit | Tuple [ParseTree] | Case ParseTree [(Pattern, ParseTree)] deriving (Show, Eq)
 
 data Prec = L String Int | R String Int deriving (Read, Show)
 
