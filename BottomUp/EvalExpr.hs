@@ -12,7 +12,7 @@ resolve (Env globals) (Env locals) str = case lookup str locals of
     Just a -> a
     Nothing -> case lookup str globals of
       Just a -> a
-      Nothing -> error $ show str ++ " is out of scope"
+      Nothing -> error $ "Woogy failed: " ++ show str ++ " is out of scope"
 
 
 eval :: Env -> Env -> ParseTree -> Value
@@ -43,7 +43,7 @@ rewrite globals locals (Tuple blah) = Thunk (\l -> TupleV $ map (rewrite globals
 rewrite globals locals (Let clauses res) = 
  let
   things = fmap (\(a, b, c) -> Decl a b c) clauses
- in rewrite globals (makeGlobals rewrite locals things) res
+ in rewrite globals (squish locals (makeGlobals rewrite (squish locals globals) things)) res
 rewrite globals locals crap = error $ "Can't rewrite " ++ show crap
 
 apply (Lam a) = a

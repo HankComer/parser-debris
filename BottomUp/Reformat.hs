@@ -112,7 +112,7 @@ getLetClause = do
 
 
 getWhole = getApplication <|> getAbs <|> getTuple <|> getUnit <|> getSingle <|> getOperator <|> getParens
-   <|> getCase
+   <|> getCase <|> getLet
 
 getParens = do
     sat (== LParen)

@@ -42,7 +42,7 @@ data Pattern = UnitP | TupleP [Pattern] | VarP String | LitP Token | UnQuote Pat
 data Inter = Ap Inter Inter | Single Token | Group [Inter] | Abs' [Token] Inter
   | Tuple' [Inter] | Unit' | Case' Inter [([Token], Inter)] | Let' [(String, [Token], Inter)] Inter deriving (Show, Eq)
 
-data PreDecl = FuncDec String [Pattern] Inter | OpDec String Pattern Pattern Inter
+data PreDecl = FuncDec String [Pattern] Inter | OpDec String Pattern Pattern Inter deriving (Show)
 
 data RealDecl = Decl String [Pattern] ParseTree deriving (Show, Eq)
 

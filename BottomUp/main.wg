@@ -7,11 +7,7 @@
 import <StdEnv>
 
 
-main = [
-  case ("a", 5) of {
-    ("b", 5) -> putStrLn "No";
-    ("a", 6) -> putStrLn "No!";
-    ("b", 6) -> putStrLn "No!!";
-    ("a", 5) -> putStrLn "Yes!";
-  }
-]
+main = let {
+  foo = "chirp";
+  bar x = strCat x foo;
+  } in putStrLn (bar "x");

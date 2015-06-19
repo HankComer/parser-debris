@@ -9,6 +9,7 @@ import Tokenize
 
 doEverything :: String -> [RealDecl]
 doEverything str = case tokensAndPrecs str of
+  ([], _) -> error "syntax error, didn't make tokens"
   (code, precs) -> map (reDeclare precs) (preDecl code)
 
 
