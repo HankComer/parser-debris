@@ -34,8 +34,8 @@ parseWhole :: Consumer Token Pattern
 parseWhole = parseWhole' <|> (do {sat (== LParen); blah <- parseWhole; sat (== RParen); return blah}) <|> (sat (== Quote) >> fmap UnQuote parseWhole)
 
 
-parsePat :: [Token] -> Pattern
-parsePat toks = case terminal parseWhole toks of
+parsePat :: [Token] -> [Pattern]
+parsePat toks = case terminal (many parseWhole) toks of
     Just a -> a
     Nothing -> error $ "Couldn't parse pattern: " ++ show toks
 

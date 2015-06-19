@@ -48,7 +48,7 @@ data RealDecl = Decl String [Pattern] ParseTree deriving (Show, Eq)
 
 
 data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs Pattern ParseTree | Unit | Tuple [ParseTree]
-  | Case ParseTree [(Pattern, ParseTree)] | Let [(String, Pattern, ParseTree)] ParseTree deriving (Show, Eq)
+  | Case ParseTree [(Pattern, ParseTree)] | Let [(String, [Pattern], ParseTree)] ParseTree deriving (Show, Eq)
 
 data Prec = L String Int | R String Int deriving (Read, Show)
 

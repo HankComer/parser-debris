@@ -182,13 +182,13 @@ delve precs (Let' things res) = Let' (map (\(n, a, b) -> (n, a, delve precs b)) 
 
 
 
-translate :: ([Token] -> Pattern) -> Inter -> ParseTree
+translate :: ([Token] -> [Pattern]) -> Inter -> ParseTree
 translate _ (Single a) = Atom a
 translate p (Ap a b) = Apply (translate p a) (translate p b)
 translate p (Group [a]) = translate p a
 translate _ (Group what) = error $ "Parse error? check translate " ++ show what
-translate p (Abs' n blah) = Abs (p n) (translate p blah)
+translate p (Abs' n blah) = Abs (case p n of {[a] -> a; a -> error "you can't have multi-arg lambdas yet"}) (translate p blah)
 translate _ Unit' = Unit
 translate p (Tuple' blah) = Tuple (map (translate p) blah)
-translate p (Case' arg clauses) = Case (translate p arg) $ map (\(left, right) -> (p left, translate p right)) clauses
+translate p (Case' arg clauses) = Case (translate p arg) $ map (\(left, right) -> ((\[a] -> a) $ p left, translate p right)) clauses
 translate p (Let' clauses res) = Let (map (\(a, left, right) -> (a, p left, translate p right)) clauses) (translate p res)

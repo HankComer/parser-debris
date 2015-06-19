@@ -1,6 +1,7 @@
 module EvalExpr where
 import CommonData
 import Control.Monad (zipWithM)
+import ConvertProgram (makeGlobals)
 
 
 
@@ -39,6 +40,10 @@ rewrite globals locals (Case asdf' things) =
 rewrite globals locals Unit = UnitV
 rewrite globals locals (Tuple [blah]) = rewrite globals locals blah
 rewrite globals locals (Tuple blah) = Thunk (\l -> TupleV $ map (rewrite globals l) blah) locals
+rewrite globals locals (Let clauses res) = 
+ let
+  things = fmap (\(a, b, c) -> Decl a b c) clauses
+ in rewrite globals (makeGlobals rewrite locals things) res
 rewrite globals locals crap = error $ "Can't rewrite " ++ show crap
 
 apply (Lam a) = a
