@@ -14,5 +14,5 @@ doEverything str = case tokensAndPrecs str of
 
 
 reDeclare :: [Prec] -> PreDecl -> RealDecl
-reDeclare precs (FuncDec name args toks) = Decl name args (doItAll precs toks)
-reDeclare precs (OpDec name arg1 arg2 toks) = Decl name [arg1, arg2] (doItAll precs toks)
+reDeclare precs (FuncDec name args inter) = Decl name args (translate parsePat $ delve precs inter)
+reDeclare precs (OpDec name arg1 arg2 inter) = Decl name [arg1, arg2] (translate parsePat $ delve precs inter)

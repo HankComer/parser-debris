@@ -21,6 +21,8 @@ data Token
   | CaseOf
   | LCurly
   | RCurly
+  | LetT
+  | InT
   | LambdaArrow deriving (Show, Eq)
 
 isId (Id _) = True
@@ -37,12 +39,16 @@ isLit _ = False
 
 data Pattern = UnitP | TupleP [Pattern] | VarP String | LitP Token | UnQuote Pattern deriving (Show, Eq)
 
-data PreDecl = FuncDec String [Pattern] [Token] | OpDec String Pattern Pattern [Token]
+data Inter = Ap Inter Inter | Single Token | Group [Inter] | Abs' [Token] Inter
+  | Tuple' [Inter] | Unit' | Case' Inter [([Token], Inter)] | Let' [(String, [Token], Inter)] Inter deriving (Show, Eq)
+
+data PreDecl = FuncDec String [Pattern] Inter | OpDec String Pattern Pattern Inter
 
 data RealDecl = Decl String [Pattern] ParseTree deriving (Show, Eq)
 
 
-data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs Pattern ParseTree | Unit | Tuple [ParseTree] | Case ParseTree [(Pattern, ParseTree)] deriving (Show, Eq)
+data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs Pattern ParseTree | Unit | Tuple [ParseTree]
+  | Case ParseTree [(Pattern, ParseTree)] | Let [(String, Pattern, ParseTree)] ParseTree deriving (Show, Eq)
 
 data Prec = L String Int | R String Int deriving (Read, Show)
 

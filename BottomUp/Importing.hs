@@ -6,9 +6,10 @@ import ConvertProgram
 import ParseProgram
 import CommonData
 import StdLib
+import EvalExpr (rewrite)
 
 getEnv :: Env -> String -> Env
-getEnv env str = makeGlobals env (doEverything str)
+getEnv env str = makeGlobals rewrite env (doEverything str)
 
 
 data ImportMode = User | Builtin

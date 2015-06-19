@@ -24,6 +24,8 @@ getId = spaced $ do
     return $ case first ++ rest of
         "case" -> CaseStart
         "of" -> CaseOf
+        "in" -> InT
+        "let" -> LetT
         a -> Id a
 
 getOp :: Parser Token

@@ -1,10 +1,12 @@
 module ConvertProgram where
 import CommonData
-import EvalExpr
+
 import Data.List
 
 
 getFuncName (Decl str _ _) = str
+
+type Eval = Env -> Env -> ParseTree -> Value
 
 
 getNames :: [RealDecl] -> [String]
@@ -29,25 +31,27 @@ validateNumArgs decls =
       (Decl name _ _) -> error $ show name ++ " has an inconsistent number of arguments"
   
 
-makeDeclValue :: [RealDecl] -> Env -> Value
-makeDeclValue decls globals =
+makeDeclValue :: Eval ->[RealDecl] -> Env -> Value
+makeDeclValue rewrite decls globals =
  let
   transform (Decl n args body) = (TupleP args, body)
   pats = fmap transform decls
   argNum = numArgs (head decls)
   tree = unfoldArgs (map VarP (makeArgs argNum)) $ Case (Tuple (map (Atom . Id) $ makeArgs argNum)) pats
- in Thunk (\gs -> eval gs (Env []) tree) globals
+ in Thunk (\gs -> rewrite gs (Env []) tree) globals
 
-convert :: [RealDecl] -> Env -> (String, Value)
-convert decls@((Decl name _ _):_) globals = (name, makeDeclValue decls globals)
+convert :: Eval -> [RealDecl] -> Env -> (String, Value)
+convert eval decls@((Decl name _ _):_) globals = (name, makeDeclValue eval decls globals)
 
-makeGlobals :: Env -> [RealDecl] -> Env
-makeGlobals g decls =
+makeGlobals :: Eval -> Env -> [RealDecl] -> Env
+makeGlobals eval g decls =
  let
   things = getFuncs decls
-  blah = map (\decs -> convert decs (squish g globals)) things
+  blah = map (\decs -> convert eval decs (squish g globals)) things
   globals = Env blah
  in globals
+
+
 
 
 

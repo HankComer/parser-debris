@@ -2,6 +2,7 @@ module ParseDecl where
 import TokenMonad
 import CommonData
 import Control.Applicative
+import Reformat
 
 
 parseUnit :: Consumer Token Pattern
@@ -32,19 +33,20 @@ parseWhole' = parseUnit <|> parseTuple <|> parseVar <|> parseLit
 parseWhole :: Consumer Token Pattern
 parseWhole = parseWhole' <|> (do {sat (== LParen); blah <- parseWhole; sat (== RParen); return blah}) <|> (sat (== Quote) >> fmap UnQuote parseWhole)
 
+
 parsePat :: [Token] -> Pattern
 parsePat toks = case terminal parseWhole toks of
     Just a -> a
-    Nothing -> error $ "Error parsing a pattern: " ++ show toks
+    Nothing -> error $ "Couldn't parse pattern: " ++ show toks
+
 
 parseFuncDec :: Consumer Token PreDecl
 parseFuncDec = do
     (Id name) <- sat isId
     args <- many parseWhole
     sat (== Equals)
-    sat (== LBracket)
-    contents <- many $ sat (/= RBracket)
-    sat (== RBracket)
+    contents <- getWhole
+    sat (== SemiColon)
     return $ FuncDec name args contents
 
 parseOpDec :: Consumer Token PreDecl
@@ -53,9 +55,8 @@ parseOpDec = do
     (Op name) <- sat isOp
     arg2 <- parseWhole
     sat (== Equals)
-    sat (== LBracket)
-    contents <- many $ sat (/= RBracket)
-    sat (== RBracket)
+    contents <- getWhole
+    sat (== SemiColon)
     return $ OpDec name arg1 arg2 contents
 
 

@@ -1,10 +1,10 @@
-module Reformat (on, translate, doItAll) where
+module Reformat (on, translate, getWhole, delve) where
 
 import Tokenize
 import TokenMonad
 import Control.Applicative
 import CommonData
-import ParseDecl (parseWhole, parsePat)
+
 
 import Data.List
 
@@ -26,8 +26,7 @@ getPrec (R _ i) = i
 
 
 
-data Inter = Ap Inter Inter | Single Token | Group [Inter] | Abs' Pattern Inter
-  | Tuple' [Inter] | Unit' | Case' Inter [([Token], Inter)] deriving (Show, Eq)
+
 
 
 
@@ -54,7 +53,7 @@ getApplication = do
 getAbs :: Consumer Token Inter
 getAbs = do
     sat (== LambdaStart)
-    arg <- parseWhole
+    arg <- some $ sat (/= LambdaArrow)
     sat (== LambdaArrow)
     blah <- some getWhole
     return (Abs' arg (Group blah))
@@ -85,15 +84,35 @@ getCase = do
 
 getCaseClause :: Consumer Token ([Token], Inter)
 getCaseClause = do
-    things <- some $ sat (/= LambdaArrow)
+    pat <- some (sat (/= LambdaArrow))
     sat (== LambdaArrow)
     blah <- getWhole
     sat (== SemiColon)
-    return (things, blah)
+    return (pat, blah)
+
+getLet :: Consumer Token Inter
+getLet = do
+    sat (== LetT)
+    sat (== LCurly)
+    things <- some getLetClause
+    sat (== RCurly)
+    sat (== InT)
+    blah <- getWhole
+    return (Let' things blah)
+
+getLetClause :: Consumer Token (String, [Token], Inter)
+getLetClause = do
+    (Single (Id name)) <- getSingle
+    pat <- many (sat (/= Equals))
+    sat (== Equals)
+    blah <- getWhole
+    sat (== SemiColon)
+    return (name, pat, blah)
     
 
 
-getWhole = getApplication <|> getAbs <|> getTuple <|> getUnit <|> getSingle <|> getOperator <|> getParens <|> getCase
+getWhole = getApplication <|> getAbs <|> getTuple <|> getUnit <|> getSingle <|> getOperator <|> getParens
+   <|> getCase
 
 getParens = do
     sat (== LParen)
@@ -150,26 +169,26 @@ delve precs (Abs' pat thing) = Abs' pat (delve precs thing)
 delve precs Unit' = Unit'
 delve precs (Tuple' blah) = Tuple' $ fmap (delve precs) blah
 delve precs (Case' arg things) = Case' (delve precs arg) $ map (\(a, b) -> (a, delve precs b)) things
+delve precs (Let' things res) = Let' (map (\(n, a, b) -> (n, a, delve precs b)) things) (delve precs res)
+
+
+
+
+--doItAll :: [Prec] -> [Token] -> ParseTree
+--doItAll precs toks = translate $ reorganize precs (doThing toks)
 
 
 
 
 
-doItAll :: [Prec] -> [Token] -> ParseTree
-doItAll precs toks = translate $ reorganize precs (doThing toks)
 
-
-
-
-
-
-translate :: Inter -> ParseTree
-translate (Single a) = Atom a
-translate (Ap a b) = Apply (translate a) (translate b)
-translate (Group [a]) = translate a
-translate (Group what) = error $ "Parse error? check translate " ++ show what
-translate (Abs' n blah) = Abs n (translate blah)
-translate Unit' = Unit
-translate (Tuple' blah) = Tuple (map translate blah)
-translate (Case' arg clauses) = Case (translate arg) $ map (\(left, right) -> (parsePat left, translate right)) clauses
-
+translate :: ([Token] -> Pattern) -> Inter -> ParseTree
+translate _ (Single a) = Atom a
+translate p (Ap a b) = Apply (translate p a) (translate p b)
+translate p (Group [a]) = translate p a
+translate _ (Group what) = error $ "Parse error? check translate " ++ show what
+translate p (Abs' n blah) = Abs (p n) (translate p blah)
+translate _ Unit' = Unit
+translate p (Tuple' blah) = Tuple (map (translate p) blah)
+translate p (Case' arg clauses) = Case (translate p arg) $ map (\(left, right) -> (p left, translate p right)) clauses
+translate p (Let' clauses res) = Let (map (\(a, left, right) -> (a, p left, translate p right)) clauses) (translate p res)
