@@ -23,6 +23,12 @@ spaced thing = Parser $ (\s -> let
   bar = concat $ fmap (\(as, b) -> zip as (repeat b)) foo
  in bar)
 
+line :: Parser String
+line = do
+    blah <- many (sat (/= '\n'))
+    char '\n'
+    return blah
+
 
 
 instance Functor Parser where

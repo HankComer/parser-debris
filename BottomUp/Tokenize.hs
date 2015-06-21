@@ -34,6 +34,26 @@ getOp = spaced $ do
     things' <- many (oneOf $ fmap return "+-=~#$%^&*<>.?/:|")
     return (Op (concat things ++ concat things'))
 
+scanPrec :: Parser Token
+scanPrec = do
+    many (sat isSpace)
+    char '@'
+    blah <- line
+    case reads blah of
+        (a, _):_ -> return (Prec a)
+        _ -> empty
+
+scanImport = do
+  many (sat isSpace)
+  string "import"
+  space
+  char '<'
+  blah <- many (sat (/= '>'))
+  char '>'
+  many (sat isSpace)
+  return (Import $ '<':blah ++ ">")
+  
+
 getSymbol :: Parser Token
 getSymbol = do
     space
@@ -60,13 +80,14 @@ getSymbol = do
 
 
 getTokens :: Parser [Token]
-getTokens = many $ getInt <|> getDouble <|> getString <|> getId <|> getOp <|> getSymbol 
+getTokens = many $ getInt <|> getDouble <|> scanImport <|> getString <|> getId <|> getOp <|> getSymbol <|> scanPrec 
 
 removeComment :: String -> String
 removeComment [] = []
 removeComment ('/':'/':_) = []
 removeComment (a:rest) = a:removeComment rest
 
+{-
 removeImports :: String -> ([String], String)
 removeImports str = 
  let
@@ -86,6 +107,7 @@ codeAndMeta stuff =
   meta = fmap (\l -> case dropWhile (/= '@') l of {'@':rest -> rest; a -> a}) blah
   code = fmap (takeWhile (/= '@')) blah
  in (unlines code, meta)
+-}
   
 -- Assumes that missing prec means left associative, precedence 9
 generateMissingPrecs :: [Prec] -> [Token] -> [Prec]
@@ -102,13 +124,16 @@ tokenize str = case terminal getTokens str of
     Just a -> map (\foo -> case foo of {Op "->" -> LambdaArrow; Op "=" -> Equals; blah -> blah}) a
     Nothing -> error "syntax error"
 
-tokensAndPrecs :: String -> ([Token], [Prec])
-tokensAndPrecs str = case removeImports str of
-  (imports, str') -> case codeAndMeta str' of
-    (code, meta) -> let
-      blah = tokenize code
-      foo = getPrecs meta
-     in (blah, generateMissingPrecs foo blah)
+
+
+tokensPrecsImports :: String -> ([Token], [Prec], [String])
+tokensPrecsImports str =
+ let
+  toks = tokenize str
+  imports = fmap (\(Import x) -> x) $ filter isImport toks
+  precs = generateMissingPrecs (fmap (\(Prec x) -> x) $ filter isPrec toks) tokens
+  tokens = filter (\x -> not $ isPrec x || isImport x) toks
+ in (tokens, precs, imports)
 
 
 backToString' :: Token -> String

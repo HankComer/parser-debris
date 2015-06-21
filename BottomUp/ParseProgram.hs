@@ -7,10 +7,10 @@ import Tokenize
 
 
 
-doEverything :: String -> [RealDecl]
-doEverything str = case tokensAndPrecs str of
-  ([], _) -> error "syntax error, didn't make tokens"
-  (code, precs) -> map (reDeclare precs) (preDecl code)
+doEverything :: String -> ([RealDecl], [String])
+doEverything str = case tokensPrecsImports str of
+  ([], _, _) -> error "syntax error, didn't make tokens"
+  (code, precs, imports) -> (map (reDeclare precs) (preDecl code), imports)
 
 
 

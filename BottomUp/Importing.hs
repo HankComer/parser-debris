@@ -7,9 +7,13 @@ import ParseProgram
 import CommonData
 import StdLib
 import EvalExpr (rewrite)
+import Data.Char (isSpace)
 
-getEnv :: Env -> String -> Env
-getEnv env str = makeGlobals rewrite env (doEverything str)
+
+
+getEnvImports :: Env -> String -> (Env, [String])
+getEnvImports env str = case doEverything str of
+  (decls, imports) -> (makeGlobals rewrite env decls, imports)
 
 
 data ImportMode = User | Builtin
@@ -17,41 +21,39 @@ data ImportMode = User | Builtin
 
 getBuiltin :: Parser (String, ImportMode)
 getBuiltin = do
-    space
+    many (sat isSpace)
     char '<'
     name <- some (sat (/= '>'))
     char '>'
-    space
     return (name, Builtin)
 
-getUserMade :: Parser (String, ImportMode)
-getUserMade = do
-    space
-    char '"'
-    name <- some (sat (/= '"'))
-    char '"'
-    space
-    return (name, User)
 
-simpleImport str = case (terminal $ getUserMade <|> getBuiltin) str of
+
+
+
+simpleImport str = case (terminal getBuiltin) str of
     Just a -> a
 
-loadFile :: String -> IO (String, Env)
+loadFile :: String -> IO Env
 loadFile fname = do
-    text <- readFile fname
-    let (imports, stuff) = removeImports text
-    envs <- mapM (importSimple . simpleImport) imports
-    case envs of
-        [] -> return (stuff, Env [])
-        [a] -> return (stuff, a)
-        a -> return (stuff, foldr1 squish a)
+   text <- readFile fname
+   getEnv text
+
+
+getEnv :: String -> IO Env
+getEnv text = do
+   let (decls, imports) = doEverything text
+   envs <- mapM (importSimple . simpleImport) imports
+   let extEnv = foldr1 squish envs
+   return (makeGlobals rewrite extEnv decls)
+   
+   
 
 importSimple (blah, User) = do
-    (str, env) <- loadFile (blah ++ ".wg")
-    return (getEnv env str)
+    loadFile (blah ++ ".wg")
 importSimple (blah, Builtin) = case lookup blah libs of
     Just a -> return a
-    Nothing -> error $ "couldn't find library '" ++ blah ++ "'"
+    Nothing -> importSimple (blah, User)
    
 
 

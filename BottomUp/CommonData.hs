@@ -24,7 +24,15 @@ data Token
   | RCurly
   | LetT
   | InT
-  | LambdaArrow deriving (Show, Eq)
+  | LambdaArrow
+  | Import String
+  | Prec Prec deriving (Show, Eq)
+
+isPrec (Prec _) = True
+isPrec _ = False
+
+isImport (Import _) = True
+isImport _ = False
 
 isId (Id _) = True
 isId _ = False
@@ -51,7 +59,7 @@ data RealDecl = Decl String [Pattern] ParseTree deriving (Show, Eq)
 data ParseTree = Atom Token | Apply ParseTree ParseTree | Abs Pattern ParseTree | Unit | Tuple [ParseTree]
   | Case ParseTree [(Pattern, ParseTree)] | Let [(String, [Pattern], ParseTree)] ParseTree deriving (Show, Eq)
 
-data Prec = L String Int | R String Int deriving (Read, Show)
+data Prec = L String Int | R String Int deriving (Read, Show, Eq)
 
 precGetOpStr :: Prec -> String
 precGetOpStr (L a _) = a

@@ -1,7 +1,7 @@
 
 
-import "bool"
-import "show"
+import <bool>
+import <show>
 
 @R "**" 5
 
