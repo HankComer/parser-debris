@@ -11,4 +11,11 @@ x ** y = (x, y);
 import <StdEnv>
 
 
-main = putStrLn (showList toStr (1, (2, (3, (4, ())))));
+dingus 0 = putStrLn "asdf";
+dingus 1 = putStrLn "zxcv";
+
+
+main = catch (dingus 2) (!x -> case x of {
+  ("casefail", a) -> putStrLn "case failed";
+  a -> putStrLn "some other error";
+});

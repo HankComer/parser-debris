@@ -52,6 +52,7 @@ getSymbol = do
         ';' -> return SemiColon
         '{' -> return LCurly
         '}' -> return RCurly
+        '\\' -> error "You've got a backslash, and probably mean '!'."
         _ -> empty
 
 

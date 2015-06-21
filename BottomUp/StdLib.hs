@@ -17,23 +17,21 @@ stdEnv = Env [
   ("primEq", primEq),
   ("headStr", headStr),
   ("tailStr", tailStr),
-  ("toStr", toStr)]
+  ("toStr", toStr),
+  ("catch", catch),
+  ("throw", throw)]
 
 
 mapIO :: Value
-mapIO = Lam $ with (\(Lam f) -> Lam $ with (\(IO a) -> IO (fmap f a)))
+mapIO = Lam (\a -> Lam (\b -> IO (fmap (unLam a) (unIO b))))
 
 chainIO :: Value
-chainIO = Lam $ with (\(IO a) -> Lam $ with (\(IO b) -> IO (a >> b)))
+chainIO = Lam (\a -> Lam (\b -> IO (unIO a >> unIO b)))
 
 
-bindIO = Lam $ with (\(IO a) -> Lam $ with (\x -> case x of
-  (Lam f) -> IO $ do
-    r <- fmap (with f) a
-    case compress r of
-        IO dingus -> dingus
-        notIO -> error $ "bindIO's do again " ++ show notIO
-  blah -> error $ "bindIO again " ++ show blah))
+bindIO = Lam (\a -> Lam (\b -> IO $ do
+    blah <- unIO a
+    unIO (unLam b a)))
 
 strCat :: Value
 strCat = Lam (\a -> Lam (\b -> StringV (unString a ++ unString b)))
@@ -50,3 +48,7 @@ tailStr = Lam (\a -> StringV (tail $ unString a))
 
 
 toStr = Lam $ with (\a -> StringV $ show a)
+
+catch = Lam $ Lam . unError
+
+throw = Lam Error

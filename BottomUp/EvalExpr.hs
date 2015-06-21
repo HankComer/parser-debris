@@ -32,7 +32,8 @@ rewrite globals locals (Case asdf' things) =
   asdf = rewrite globals locals asdf'
   blah :: [(Pattern, ParseTree)]
   blah = things
-  thing [] l = error $ "Pattern match failure in case expression: " ++ unlines (fmap (show . fst) blah) ++ "\nThe value: " ++ show asdf
+  thing :: [(Pattern, ParseTree)] -> Env -> Value
+  thing [] l = Error $ TupleV [StringV "casefail", StringV $ "Pattern match failure in case expression: " ++ unlines (fmap (show . fst) blah) ++ "\nThe value: " ++ show asdf]
   thing ((pat, body):rest) l = case match' pat asdf of
     Just env -> rewrite globals (squish l env) body
     Nothing -> thing rest l
