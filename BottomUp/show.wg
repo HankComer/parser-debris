@@ -1,0 +1,19 @@
+
+
+
+
+
+
+
+import <StdEnv>
+
+
+
+
+
+showList_ showFunc () = "";
+showList_ showFunc (a, ()) = showFunc a;
+showList_ showFunc (a, rest) = strCat (strCat (showFunc a) ", ") (showList_ showFunc rest);
+
+showList showFunc x = strCat (strCat "{" (showList_ showFunc x)) "}";
+

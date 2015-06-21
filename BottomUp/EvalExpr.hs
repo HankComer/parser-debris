@@ -32,7 +32,7 @@ rewrite globals locals (Case asdf' things) =
   asdf = rewrite globals locals asdf'
   blah :: [(Pattern, ParseTree)]
   blah = things
-  thing [] l = error $ "Pattern match failure in case expression: " ++ show blah ++ "\nThe value: " ++ show asdf
+  thing [] l = error $ "Pattern match failure in case expression: " ++ unlines (fmap (show . fst) blah) ++ "\nThe value: " ++ show asdf
   thing ((pat, body):rest) l = case match' pat asdf of
     Just env -> rewrite globals (squish l env) body
     Nothing -> thing rest l
@@ -78,6 +78,7 @@ match' (TupleP a) (TupleV b) = if length a == length b then if a == [] then (Jus
 match' (LitP (Double a)) (DoubleV b) = if a == b then Just (Env []) else Nothing
 match' (LitP (Int a)) (IntV b) = if a == b then Just (Env []) else Nothing
 match' (LitP (String a)) (StringV b) = if a == b then Just (Env []) else Nothing
+match' UnitP UnitV = Just (Env [])
 match' _ _ = Nothing
 
 matchCase :: [Pattern] -> Value -> Env

@@ -1,0 +1,11 @@
+
+
+
+
+
+just x = ("just", x);
+
+nothing = ("nothing", ());
+
+mapMaybe f ("just", x) = ("just, f x);
+mapMaybe f a = a;

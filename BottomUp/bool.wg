@@ -1,0 +1,10 @@
+
+
+
+import <StdEnv>
+
+
+eqBasic x y then else = case primEq x y of {
+    1 -> then;
+    0 -> else;
+};

@@ -1,0 +1,6 @@
+
+
+
+
+map f () = ();
+map f (x, rest) = (f x, map f rest);

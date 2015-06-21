@@ -1,0 +1,11 @@
+
+
+
+
+import "bool"
+
+
+
+
+lookup x () default = default;
+lookup x ((a, b), rest) default = eqBasic x a (b) (lookup x rest default);

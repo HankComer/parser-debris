@@ -1,6 +1,7 @@
 
 
-
+import "bool"
+import "show"
 
 @R "**" 5
 
@@ -10,4 +11,4 @@ x ** y = (x, y);
 import <StdEnv>
 
 
-main = putStrLn (toStr (1 ** 2 ** 3 ** 4));
+main = putStrLn (showList toStr (1, (2, (3, (4, ())))));

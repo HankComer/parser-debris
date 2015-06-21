@@ -1,0 +1,22 @@
+
+
+
+import <StdEnv>
+import "lookup"
+import "list"
+import "maybe"
+
+IOFunctor = (("fmap", mapIO), ());
+
+ListFunctor = (("fmap", map), ());
+
+MaybeFunctor = (("fmap", mapMaybe), ());
+
+fmap functor f thing = lookup "fmap" functor (!x -> x) thing;
+
+
+
+
+
+
+
