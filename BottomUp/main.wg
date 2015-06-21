@@ -2,12 +2,12 @@
 
 
 
+@R "**" 5
 
+
+x ** y = (x, y);
 
 import <StdEnv>
 
 
-main = let {
-  foo = "chirp";
-  bar x = strCat x foo;
-  } in putStrLn (bar "x");
+main = putStrLn (toStr (1 ** 2 ** 3 ** 4));

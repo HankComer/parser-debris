@@ -16,7 +16,8 @@ stdEnv = Env [
   ("strCat", strCat),
   ("primEq", primEq),
   ("headStr", headStr),
-  ("tailStr", tailStr)]
+  ("tailStr", tailStr),
+  ("toStr", toStr)]
 
 
 mapIO :: Value
@@ -46,3 +47,6 @@ primEq = Lam $ with (\a -> Lam $ with (\b -> IntV (primEq' a b)))
 headStr = Lam (\a -> StringV [head $ unString a])
 
 tailStr = Lam (\a -> StringV (tail $ unString a))
+
+
+toStr = Lam $ with (\a -> StringV $ show a)

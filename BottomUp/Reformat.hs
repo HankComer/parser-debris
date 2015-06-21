@@ -144,8 +144,8 @@ containedIn things (L a _) = any (== Single (Op a)) things
 containedIn things (R a _) = any (== Single (Op a)) things
 
 findPlace :: Prec -> [Inter] -> Maybe Int
-findPlace (L op _) things = findIndex (== Single (Op op)) things
-findPlace (R op _) things = case findIndices (== Single (Op op)) things of
+findPlace (R op _) things = findIndex (== Single (Op op)) things
+findPlace (L op _) things = case findIndices (== Single (Op op)) things of
     [] -> Nothing
     blah -> Just $ last blah
 
