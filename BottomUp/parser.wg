@@ -1,0 +1,54 @@
+
+
+
+import <StdEnv>
+import <list>
+import <bool>
+
+item "" = ();
+item s = ((headStr s, tailStr s), ());
+
+pmap f q s = lmap (!(a, b) -> (f a, b)) (q s);
+
+pbind q f s = concat (lmap (!(a, s1) -> (f a) s1) (q s));
+
+@L ">->" 1
+
+a >-> b = pbind a b;
+
+preturn x s = ((x, s), ());
+
+
+empty s = ();
+
+@L "<|>" 3
+
+p <|> q = (!s -> append (p s) (q s));
+
+@L "+++" 9
+
+p +++ q = (!s -> case (p <|> q) s of {
+    () -> ();
+    (x, xs) -> (x, ());
+   });
+
+some p = p >-> !a -> many p >-> !as -> preturn (a, as);
+
+many p = some p +++ preturn ();
+
+
+true x y = x;
+false x y = y;
+
+isSpace " " = true;
+isSpace "\n" = true;
+isSpace "\r" = true;
+isSpace "\t" = true;
+isSpace a = false;
+
+sat p = item >-> !c -> p c (preturn c) empty;
+
+char c = sat (eqBasic c);
+
+string "" = preturn "";
+string blah = char c >-> !x -> string cs >-> ! s -> preturn blah;
