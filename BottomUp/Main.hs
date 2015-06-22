@@ -22,3 +22,10 @@ loadAndRun fname = do
 main = do
   val <- loadAndRun "main.wg"
   print val
+
+checkSyntax :: String -> IO ()
+checkSyntax fname = do
+    (Env env) <- loadFile fname
+    putStrLn $ "Loaded '" ++ fname ++ "'."
+    putStrLn "Defined functions: "
+    mapM_ (putStrLn . fst) env
