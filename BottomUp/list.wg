@@ -2,5 +2,28 @@
 
 
 
-map f () = ();
-map f (x, rest) = (f x, map f rest);
+lmap f () = ();
+lmap f (x, rest) = (f x, map f rest);
+
+
+append () a = a;
+append (a, rest) b = (a, append rest b);
+
+
+foldr f b () = b;
+foldr f b (a, rest) = f a (foldr f rest);
+
+foldl f b () = b;
+foldl f b (a, rest) = f (foldl f b rest) a;
+
+foldr1 f () = throw "foldr1 was given an empty list";
+foldr1 f (a, ()) = a;
+foldr1 f (a, rest) = f a (foldr f rest);
+
+foldl1 f () = throw "foldl1 was given an empty list";
+foldl1 f (a, ()) = a;
+foldl1 f (a, rest) = f (foldl1 f rest) a;
+
+
+concat () = ();
+concat x = foldr1 append x;

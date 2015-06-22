@@ -11,11 +11,13 @@ x ** y = (x, y);
 import <StdEnv>
 
 
-dingus 0 = putStrLn "asdf";
-dingus 1 = putStrLn "zxcv";
+dingus x y = (x, y);
 
 
-main = catch (dingus 2) (!x -> case x of {
-  ("casefail", a) -> putStrLn "case failed";
-  a -> putStrLn "some other error";
-});
+lmap f () = ();
+lmap f (a, rest) = (f a, lmap f rest);
+
+
+main = putStrLn (toStr (lmap (dingus 6) foo));
+
+foo = (1, (2, (3, (4, ()))));

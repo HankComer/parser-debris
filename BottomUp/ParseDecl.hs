@@ -45,9 +45,9 @@ parseFuncDec = do
     (Id name) <- sat isId
     args <- many parseWhole
     sat (== Equals)
-    contents <- getWhole
+    contents <- many getWhole
     sat (== SemiColon)
-    return $ FuncDec name args contents
+    return $ FuncDec name args (Group contents)
 
 parseOpDec :: Consumer Token PreDecl
 parseOpDec = do
@@ -55,9 +55,9 @@ parseOpDec = do
     (Op name) <- sat isOp
     arg2 <- parseWhole
     sat (== Equals)
-    contents <- getWhole
+    contents <- many getWhole
     sat (== SemiColon)
-    return $ OpDec name arg1 arg2 contents
+    return $ OpDec name arg1 arg2 (Group contents)
 
 
 parseAll :: Consumer Token [PreDecl]

@@ -1,4 +1,4 @@
-module Reformat (on, translate, getWhole, delve) where
+module Reformat (on, translate, getWhole, delve, reorganize) where
 
 import Tokenize
 import TokenMonad
