@@ -71,6 +71,7 @@ match blah foo = case match' blah foo of
     Nothing -> error $ "Pattern match failure: " ++ show blah ++ " AND " ++ show foo
 
 match' :: Pattern -> Value -> Maybe Env
+match' (VarP ('_':_)) a = Just (Env [])
 match' (UnQuote a) b = match' a (deepEval b)
 match' (VarP str) a = Just (Env [(str, a)])
 match' a (Thunk f x) = match' a (f x)
