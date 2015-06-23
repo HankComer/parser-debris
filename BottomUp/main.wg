@@ -18,6 +18,8 @@ lmap f () = ();
 lmap f (a, rest) = (f a, lmap f rest);
 
 
-main = putStrLn (toStr (lmap (dingus 6) foo));
+main = do (>>=) {
+    a <- getLine;
+    putStrLn (strCat a "!!!");};
 
 foo = (1, (2, (3, (4, ()))));

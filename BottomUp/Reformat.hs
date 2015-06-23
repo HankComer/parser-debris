@@ -24,10 +24,38 @@ getPrec (L _ i) = i
 getPrec (R _ i) = i
 
 
+getDo' :: Consumer Token [Inter -> Inter]
+getDo' = do
+    sat (== DoT)
+    blah <- getSingle
+    sat (== LCurly)
+    things <- some $ do
+       dingus <- processDoClause blah
+       return dingus
+    sat (== RCurly)
+    return things
+
+getDo :: Consumer Token Inter
+getDo = do
+  things <- getDo'
+  let blah = (case last things Unit' of {
+    Ap (Ap _ x) (Abs' [Id "_"] Unit') -> x;
+    _ -> error "last statement of a do block must be an expression";})
+  return (foldl (\x y -> y x) blah (init things))
 
 
-
-
+    
+processDoClause :: Inter -> Consumer Token (Inter -> Inter)
+processDoClause op = (do {
+   args <- many $ sat (\x -> x /= SemiColon && x /= Op "<-");
+   sat (== Op "<-");
+   blah <- getWhole;
+   sat (== SemiColon);
+   return (\x -> Ap (Ap op blah) (Abs' args x))} ) <|> do
+    blah <- getWhole
+    sat (== SemiColon)
+    return (\x -> Ap (Ap op blah) (Abs' [Id "_"] x))
+    
 
 
 applic :: Inter -> Consumer Token Inter
@@ -36,7 +64,11 @@ applic thing = do
     return $ Ap thing blah
 
 
-getSingle = fmap Single (sat isId <|> sat isLit)
+getSingle = fmap Single (sat isId <|> sat isLit) <|> do
+    sat (== LParen)
+    (Op thing) <- sat isOp
+    sat (== RParen)
+    return $ Single (Id thing)
 
 getOperator = fmap Single (sat isOp)
 
@@ -62,7 +94,7 @@ getTuple :: Consumer Token Inter
 getTuple = do
     sat (== LParen)
     first <- getWhole
-    rest <- many (sat (== Comma) >> getWhole)
+    rest <- some (sat (== Comma) >> getWhole)
     sat (== RParen)
     return (Tuple' (first : rest))
 
@@ -111,12 +143,12 @@ getLetClause = do
     
 
 
-getWhole = getApplication <|> getAbs <|> getTuple <|> getUnit <|> getSingle <|> getOperator <|> getParens
-   <|> getCase <|> getLet
+getWhole = getApplication <|> getSingle <|> getAbs <|> getTuple <|> getUnit  <|> getOperator <|> getParens
+   <|> getCase <|> getLet <|> getDo
 
 getParens = do
     sat (== LParen)
-    things <- many getWhole
+    things <- some getWhole
     sat (== RParen)
     return (Group things)
 

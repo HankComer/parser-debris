@@ -26,6 +26,7 @@ data Token
   | InT
   | LambdaArrow
   | Import String
+  | DoT
   | Prec Prec deriving (Show, Eq)
 
 isPrec (Prec _) = True
