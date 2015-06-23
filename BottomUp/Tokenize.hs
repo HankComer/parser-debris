@@ -88,6 +88,8 @@ removeComment [] = []
 removeComment ('/':'/':_) = []
 removeComment (a:rest) = a:removeComment rest
 
+removeComments = unlines . map removeComment . lines
+
 {-
 removeImports :: String -> ([String], String)
 removeImports str = 
@@ -121,7 +123,7 @@ generateMissingPrecs precs toks =
 
 
 tokenize :: String -> [Token]
-tokenize str = case terminal getTokens str of
+tokenize str = case terminal getTokens (removeComments str) of
     Just a -> map (\foo -> case foo of {Op "->" -> LambdaArrow; Op "=" -> Equals; blah -> blah}) a
     Nothing -> error "syntax error"
 

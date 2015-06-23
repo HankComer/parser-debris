@@ -16,10 +16,11 @@ dingus x y = (x, y);
 
 lmap f () = ();
 lmap f (a, rest) = (f a, lmap f rest);
-
+@L ">>=" 1
 
 main = do (>>=) {
     a <- getLine;
-    putStrLn (strCat a "!!!");};
+    putStrLn (strCat a "!!!");
+    };
 
 foo = (1, (2, (3, (4, ()))));

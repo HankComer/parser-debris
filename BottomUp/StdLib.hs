@@ -31,7 +31,7 @@ chainIO = Lam (\a -> Lam (\b -> IO (unIO a >> unIO b)))
 
 bindIO = Lam (\a -> Lam (\b -> IO $ do
     blah <- unIO a
-    unIO (unLam b a)))
+    unIO (unLam b blah)))
 
 strCat :: Value
 strCat = Lam (\a -> Lam (\b -> StringV (unString a ++ unString b)))
