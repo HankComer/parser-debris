@@ -19,8 +19,13 @@ lmap f (a, rest) = (f a, lmap f rest);
 @L ">>=" 1
 
 main = do (>>=) {
-    a <- getLine;
-    putStrLn (strCat a "!!!");
+    fhand <- openRead "crap.txt";
+    blah <- hReadLn fhand;
+    putStrLn blah;
+    //apples <- getContents fhand;
+    //putStrLn apples;
+    putStrLn "fuck";
+    hClose fhand;
     };
 
 foo = (1, (2, (3, (4, ()))));

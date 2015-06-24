@@ -3,6 +3,8 @@ import CommonData
 import Control.Monad (join)
 import Utils
 import EvalExpr (compress)
+import System.IO
+import ExtendedData
 
 
 
@@ -12,14 +14,21 @@ stdEnv = Env [
   (">>=", bindIO),
   (">>", chainIO),
   ("getLine", IO (fmap StringV getLine)),
-  ("putStrLn", Lam $ with (\(StringV a) -> IO (putStrLn a >> return UnitV))),
+  ("putStrLn", toValue putStrLn),
   ("strCat", strCat),
   ("primEq", primEq),
   ("headStr", headStr),
   ("tailStr", tailStr),
   ("toStr", toStr),
   ("catch", catch),
-  ("throw", throw)]
+  ("throw", throw),
+  ("openWrite", openWriteFile),
+  ("openRead", openReadFile),
+  ("hReadLn", toValue hGetLine),
+  ("hWrite", toValue hPutStr),
+  ("hClose", toValue hClose),
+  ("openAppend", openAppendFile),
+  ("getContents", toValue hGetContents)]
 
 
 mapIO :: Value
@@ -52,3 +61,10 @@ toStr = Lam $ with (\a -> StringV $ show a)
 catch = Lam $ Lam . unError
 
 throw = Lam Error
+
+
+openWriteFile = toValue $ flip openFile WriteMode
+
+openReadFile = toValue $ flip openFile ReadMode
+
+openAppendFile = toValue $ flip openFile AppendMode

@@ -1,5 +1,6 @@
 module CommonData where
 import System.IO.Unsafe (unsafePerformIO)
+import System.IO
 
 
 
@@ -80,6 +81,12 @@ data Value
   | Lam (Value -> Value)
   | IO (IO Value)
   | Error Value
+  | Handle Handle
+
+unHandle (Handle a) = a
+unHandle (Thunk f a) = unHandle (f a)
+unHandle (Error a) = stop a
+unHandle a = error $ "type error: expected Int, found " ++ show a
 
 unInt (IntV i) = i
 unInt (Thunk f a) = unInt (f a)
