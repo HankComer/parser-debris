@@ -124,7 +124,7 @@ generateMissingPrecs precs toks =
 
 tokenize :: String -> [Token]
 tokenize str = case terminal getTokens (removeComments str) of
-    Just a -> map (\foo -> case foo of {Op "->" -> LambdaArrow; Op "=" -> Equals; blah -> blah}) a
+    Just a -> map (\foo -> case foo of {Op "->" -> LambdaArrow; Op "=" -> Equals; Op "<-" -> VarBindArrow; blah -> blah}) a
     Nothing -> error "syntax error"
 
 

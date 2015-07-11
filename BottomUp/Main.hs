@@ -29,3 +29,10 @@ checkSyntax fname = do
     putStrLn $ "Loaded '" ++ fname ++ "'."
     putStrLn "Defined functions: "
     mapM_ (putStrLn . fst) env
+
+
+
+
+dingus = do
+   a <- Nothing
+   return a
