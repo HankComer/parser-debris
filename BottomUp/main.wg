@@ -19,8 +19,8 @@ lmap f (a, rest) = (f a, lmap f rest);
 @L ">>=" 1
 
 main = do (>>=) {
-    putStrLn "blah";
-    putStrLn "ssdfasdf";
+    blah <- getLine;
+    putStrLn blah;
     };
 
 foo = (1, (2, (3, (4, ()))));

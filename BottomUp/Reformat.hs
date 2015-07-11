@@ -48,8 +48,8 @@ getDo = do
     
 processDoClause :: Inter -> Consumer Token (Inter -> Inter)
 processDoClause op = (do {
-   args <- many $ sat (\x -> x /= SemiColon && x /= Op "<-");
-   sat (== Op "<-");
+   args <- many $ sat (\x -> x /= SemiColon && x /= VarBindArrow);
+   sat (== VarBindArrow);
    blah <- getWhole;
    sat (== SemiColon);
    return (\x -> Ap (Ap op blah) (Abs' args x))} ) <|> do
